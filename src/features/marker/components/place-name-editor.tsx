@@ -84,7 +84,6 @@ export function PlaceNameEditor({
           throw "";
         }
 
-        console.log(isComposingRef.current);
         if (isComposingRef.current) {
           return;
         }
@@ -98,7 +97,6 @@ export function PlaceNameEditor({
         // same pitch as the last unchanged mora.
         const newMoras = splitByMora(newReading);
         const firstDiffIndex = findFirstDiffIndex(newMoras, moras);
-        console.log(firstDiffIndex);
         if (firstDiffIndex === -1) {
           return;
         }
@@ -147,7 +145,7 @@ export function PlaceNameEditor({
     }
 
     onSubmit?.({
-      spelling: spelling,
+      spelling,
       moras,
       pitches,
     });

@@ -57,7 +57,7 @@ function useMap() {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
 
   const handleLike = useEffectEvent(() => {
-    console.log("toddle like");
+    console.log("toggle like");
   });
 
   const handleReport = useEffectEvent(({ id, reason }: ReportData) => {
@@ -86,7 +86,6 @@ function useMap() {
 
   const handleSave = useEffectEvent(
     (latLng: Leaflet.LatLng, nameData: PlaceNameData) => {
-      console.log(`nameData: ${nameData}`);
       placeDataList.push({ latLng, nameData });
     }
   );

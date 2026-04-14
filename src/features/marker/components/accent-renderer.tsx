@@ -34,7 +34,6 @@ export function AccentRenderer({
         const isHigh = pitch === "H";
         const nextPitch = pitches[index + 1] ?? DEFAULT_MORA_PITCH;
         const isChanging = pitch !== nextPitch;
-        console.log(index, mora);
 
         return (
           <button
