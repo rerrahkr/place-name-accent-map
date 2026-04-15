@@ -5,26 +5,26 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 type MapState = {
-  isEditing: boolean;
+  editingPopupId: string | undefined;
 };
 
 type MapActions = {
-  startEditing: () => void;
+  startEditing: (popupId: string) => void;
   finishEditing: () => void;
 };
 
 export const useMapStore = create<MapState & MapActions>()(
   immer((set) => ({
-    isEditing: false,
+    editingPopupId: undefined,
 
-    startEditing: () =>
+    startEditing: (popupId: string) =>
       set((state) => {
-        state.isEditing = true;
+        state.editingPopupId = popupId;
       }),
 
     finishEditing: () =>
       set((state) => {
-        state.isEditing = false;
+        state.editingPopupId = undefined;
       }),
   }))
 );

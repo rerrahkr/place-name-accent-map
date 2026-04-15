@@ -3,7 +3,8 @@
 
 import * as Leaflet from "leaflet";
 import type React from "react";
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "leaflet/dist/leaflet.css";
 import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import { toast } from "sonner";
@@ -52,9 +53,24 @@ const placeDataList: PlaceData[] = [
   },
 ];
 
+type PopupPortalEntry = {
+  id: string;
+  container: HTMLDivElement;
+  content: React.ReactNode;
+};
+
 function useMap() {
   const mapRef = useRef<Leaflet.Map | null>(null);
   const mapElementRef = useRef<HTMLDivElement | null>(null);
+  const [popupPortals, setPopupPortals] = useState<PopupPortalEntry[]>([]);
+
+  const addPopupPortal = useEffectEvent((entry: PopupPortalEntry) => {
+    setPopupPortals((previous) => [...previous, entry]);
+  });
+
+  const removePopupPortal = useEffectEvent((id: string) => {
+    setPopupPortals((previous) => previous.filter((entry) => entry.id !== id));
+  });
 
   const handleLike = useEffectEvent(() => {
     console.log("toggle like");
@@ -124,8 +140,13 @@ function useMap() {
       // Initialize marker layer
       const markerLayer = L.featureGroup();
 
+      const portalManager = {
+        addPortal: addPopupPortal,
+        removePortal: removePopupPortal,
+      };
+
       function addMarker(ev: Leaflet.ContextMenuItemClickEvent) {
-        if (useMapStore.getState().isEditing) {
+        if (useMapStore.getState().editingPopupId !== undefined) {
           console.log(
             "Could not create new marker because other marker is editing"
           );
@@ -133,7 +154,7 @@ function useMap() {
         }
 
         const marker = L.marker(ev.latlng).addTo(markerLayer);
-        mountMarkerPopup(marker, handleLike, handleReport, {
+        mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
           onSave: (nameData) => handleSave(ev.latlng, nameData),
         });
       }
@@ -141,7 +162,7 @@ function useMap() {
       // Add existing markers
       for (const placeData of placeDataList) {
         const marker = L.marker(placeData.latLng).addTo(markerLayer);
-        mountMarkerPopup(marker, handleLike, handleReport, {
+        mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
           defaultNameData: placeData.nameData,
         });
       }
@@ -157,7 +178,7 @@ function useMap() {
     };
   }, []);
 
-  return { mapElementRef };
+  return { mapElementRef, popupPortals };
 }
 
 type MapComponentProps = {
@@ -169,7 +190,14 @@ export function MapComponent({
   className,
   style,
 }: MapComponentProps): React.JSX.Element {
-  const { mapElementRef } = useMap();
+  const { mapElementRef, popupPortals } = useMap();
 
-  return <div ref={mapElementRef} className={className} style={style} />;
+  return (
+    <>
+      <div ref={mapElementRef} className={className} style={style} />
+      {popupPortals.map(({ id, container, content }) =>
+        createPortal(content, container, id)
+      )}
+    </>
+  );
 }
