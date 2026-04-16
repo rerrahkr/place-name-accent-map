@@ -18,10 +18,9 @@ type MarkerPopupProps = {
   initiallyEditing?: boolean | undefined;
   onSave: (data: PlaceNameData) => void;
   onCancel: () => void;
-
   likeCount: number;
   isLiked: boolean;
-  onLike: () => void;
+  onLike: (isLiked: boolean) => void;
   onReport: (reportData: ReportData) => void;
 };
 
@@ -30,7 +29,6 @@ export function MarkerPopup({
   initiallyEditing = true,
   onSave,
   onCancel,
-
   likeCount,
   isLiked,
   onLike,

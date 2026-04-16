@@ -4,9 +4,16 @@
 import type * as Leaflet from "leaflet";
 import type { MoraPitch } from "./utils/mora";
 
+export type LikeInfo = {
+  count: number;
+  isLiked: boolean;
+};
+
 export type PlaceData = {
+  id: string;
   latLng: Leaflet.LatLng;
   nameData: PlaceNameData;
+  likeInfo: LikeInfo;
 };
 
 export type PlaceNameData = {

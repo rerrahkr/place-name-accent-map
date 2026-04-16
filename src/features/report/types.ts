@@ -6,6 +6,5 @@ import type { DELETE_REASONS } from "./consts";
 export type DeleteReason = (typeof DELETE_REASONS)[number];
 
 export type ReportData = {
-  id: string;
   reason: DeleteReason;
 };

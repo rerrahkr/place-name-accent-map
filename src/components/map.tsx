@@ -9,7 +9,9 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import { toast } from "sonner";
 import { mountMarkerPopup } from "@/features/marker";
+import { explainDeleteReason } from "@/features/report";
 import type { ReportData } from "@/features/report/types";
+import { newId } from "@/lib/utils";
 import { useMapStore } from "@/stores";
 import type { PlaceData, PlaceNameData } from "@/types";
 
@@ -36,24 +38,35 @@ async function loadLeaflet(): Promise<typeof Leaflet> {
 // TODO: Load on first launch and cache the data
 const placeDataList: PlaceData[] = [
   {
+    id: newId(),
     latLng: Leaflet.latLng(35.681236, 139.767125),
     nameData: {
       spelling: "東京",
       moras: ["と", "ー", "きょ", "ー"],
       pitches: ["L", "H", "H", "H"],
     },
+    likeInfo: {
+      count: 10,
+      isLiked: true,
+    },
   },
   {
+    id: newId(),
     latLng: Leaflet.latLng(35.689957, 139.700507),
     nameData: {
       spelling: "新宿",
       moras: ["し", "ん", "じゅ", "く"],
       pitches: ["L", "H", "H", "H"],
     },
+    likeInfo: {
+      count: 5,
+      isLiked: false,
+    },
   },
 ];
 
 type PopupPortalEntry = {
+  /** The same value as the place data's ID.  */
   id: string;
   container: HTMLDivElement;
   content: React.ReactNode;
@@ -72,14 +85,21 @@ function useMap() {
     setPopupPortals((previous) => previous.filter((entry) => entry.id !== id));
   });
 
-  const handleLike = useEffectEvent(() => {
-    console.log("toggle like");
+  const handleLike = useEffectEvent((id: string, isLiked: boolean) => {
+    console.log(`toggle like ${isLiked ? "on" : "off"}: "${id}"`);
+
+    for (const { likeInfo } of placeDataList) {
+      likeInfo.count += isLiked ? 1 : -1;
+      likeInfo.isLiked = isLiked;
+    }
   });
 
-  const handleReport = useEffectEvent(({ id, reason }: ReportData) => {
+  const handleReport = useEffectEvent((id: string, { reason }: ReportData) => {
     console.log(`Accept deletion request "${id}": ${reason}`);
 
-    toast.success(`削除依頼を受け付けました`);
+    toast.success(`削除依頼を受け付けました`, {
+      description: explainDeleteReason(reason),
+    });
   });
 
   useEffect(() => {
@@ -101,8 +121,16 @@ function useMap() {
   }, []);
 
   const handleSave = useEffectEvent(
-    (latLng: Leaflet.LatLng, nameData: PlaceNameData) => {
-      placeDataList.push({ latLng, nameData });
+    (id: string, latLng: Leaflet.LatLng, nameData: PlaceNameData) => {
+      placeDataList.push({
+        id,
+        latLng,
+        nameData,
+        likeInfo: {
+          count: 0,
+          isLiked: false,
+        },
+      });
     }
   );
 
@@ -155,15 +183,19 @@ function useMap() {
 
         const marker = L.marker(ev.latlng).addTo(markerLayer);
         mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
-          onSave: (nameData) => handleSave(ev.latlng, nameData),
+          mode: "edit",
+          onSave: (id, nameData) => handleSave(id, ev.latlng, nameData),
         });
       }
 
       // Add existing markers
-      for (const placeData of placeDataList) {
-        const marker = L.marker(placeData.latLng).addTo(markerLayer);
+      for (const { id, latLng, nameData, likeInfo } of placeDataList) {
+        const marker = L.marker(latLng).addTo(markerLayer);
         mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
-          defaultNameData: placeData.nameData,
+          mode: "display",
+          id,
+          nameData,
+          likeInfo,
         });
       }
 

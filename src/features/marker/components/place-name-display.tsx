@@ -14,7 +14,7 @@ interface PlaceNameDisplayProps {
   pitches: MoraPitch[];
   likeCount: number;
   isLiked: boolean;
-  onLike: () => void;
+  onLike: (isLiked: boolean) => void;
   onReport: (reportData: ReportData) => void;
 }
 
@@ -39,7 +39,7 @@ export function PlaceNameDisplay({
       setCount((prev) => prev + 1);
     }
     setLiked((prev) => !prev);
-    onLike();
+    onLike(!liked);
   }
 
   return (
@@ -96,9 +96,7 @@ export function PlaceNameDisplay({
         </div>
       </div>
 
-      {/* TODO: Set proper ID */}
       <ReportDialog
-        id="dummy"
         isOpen={reportDialogOpened}
         onOpenChange={setReportDialogOpend}
         onSubmitReport={onReport}

@@ -15,23 +15,15 @@ import {
 } from "@/components/ui/dialog";
 import { DELETE_REASONS } from "../consts";
 import type { DeleteReason, ReportData } from "../types";
-
-const DELETE_REASON_TEXT: Readonly<Record<DeleteReason, string>> = {
-  inappropriate: "不適切な内容",
-  spam: "スパム",
-  duplicate: "重複",
-  incorrect: "誤った情報",
-};
+import { explainDeleteReason } from "../utils/report-data";
 
 type ReportDialogProps = {
-  id: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmitReport: (reportData: ReportData) => void;
 };
 
 export function ReportDialog({
-  id,
   isOpen,
   onOpenChange,
   onSubmitReport,
@@ -45,7 +37,7 @@ export function ReportDialog({
       return;
     }
 
-    onSubmitReport({ id, reason: deleteReason });
+    onSubmitReport({ reason: deleteReason });
 
     onOpenChange(false);
     setSelectedReason(undefined);
@@ -79,7 +71,7 @@ export function ReportDialog({
                 onChange={() => setSelectedReason(reason)}
                 className="w-4 h-4"
               />
-              <span className="text-sm">{DELETE_REASON_TEXT[reason]}</span>
+              <span className="text-sm">{explainDeleteReason(reason)}</span>
             </label>
           ))}
         </div>

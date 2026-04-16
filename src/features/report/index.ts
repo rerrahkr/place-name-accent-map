@@ -3,3 +3,4 @@
 
 export { ReportDialog } from "./components/report-dialog";
 export type { DeleteReason, ReportData } from "./types";
+export { explainDeleteReason } from "./utils/report-data";
