@@ -15,13 +15,6 @@ import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores";
 import type { PlaceData, PlaceNameData } from "@/types";
 
-// Complete type definitions not present in @types/leaflet-contextmenu
-declare module "leaflet" {
-  interface MapOptions {
-    contextmenuWidth?: number | undefined;
-  }
-}
-
 async function loadLeaflet(): Promise<typeof Leaflet> {
   // Dynamically import Leaflet and plugin
   const L = (await import("leaflet")).default;
@@ -159,14 +152,21 @@ function useMap(repository: PlaceRepository) {
       // Initialize the map
       const map = L.map(container, {
         contextmenu: true,
-        contextmenuWidth: 140,
+        contextmenuWidth: 180,
         contextmenuItems: [
           {
-            text: "Add New Marker",
+            text: "この地点の地名と発音を登録",
             callback: addMarker,
+            disabled: false,
           },
         ],
       }).setView([35.681236, 139.767125], 15);
+      map.on("contextmenu.show", () => {
+        map.contextmenu.setDisabled(
+          0,
+          useMapStore.getState().editingPopupId !== undefined
+        );
+      });
       mapRef.current = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
