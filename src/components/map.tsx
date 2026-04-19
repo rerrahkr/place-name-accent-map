@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-import * as Leaflet from "leaflet";
+import type * as Leaflet from "leaflet";
 import type React from "react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { mountMarkerPopup } from "@/features/marker";
 import { explainDeleteReason } from "@/features/report";
 import type { ReportData } from "@/features/report/types";
-import { newId } from "@/lib/utils";
+import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores";
 import type { PlaceData, PlaceNameData } from "@/types";
 
@@ -35,36 +35,6 @@ async function loadLeaflet(): Promise<typeof Leaflet> {
   return L;
 }
 
-// TODO: Load on first launch and cache the data
-const placeDataList: PlaceData[] = [
-  {
-    id: newId(),
-    latLng: Leaflet.latLng(35.681236, 139.767125),
-    nameData: {
-      spelling: "東京",
-      moras: ["と", "ー", "きょ", "ー"],
-      pitches: ["L", "H", "H", "H"],
-    },
-    likeInfo: {
-      count: 10,
-      isLiked: true,
-    },
-  },
-  {
-    id: newId(),
-    latLng: Leaflet.latLng(35.689957, 139.700507),
-    nameData: {
-      spelling: "新宿",
-      moras: ["し", "ん", "じゅ", "く"],
-      pitches: ["L", "H", "H", "H"],
-    },
-    likeInfo: {
-      count: 5,
-      isLiked: false,
-    },
-  },
-];
-
 type PopupPortalEntry = {
   /** The same value as the place data's ID.  */
   id: string;
@@ -72,10 +42,11 @@ type PopupPortalEntry = {
   content: React.ReactNode;
 };
 
-function useMap() {
+function useMap(repository: PlaceRepository) {
   const mapRef = useRef<Leaflet.Map | null>(null);
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const [popupPortals, setPopupPortals] = useState<PopupPortalEntry[]>([]);
+  const [_places, setPlaces] = useState<PlaceData[]>([]);
 
   const addPopupPortal = useEffectEvent((entry: PopupPortalEntry) => {
     setPopupPortals((previous) => [...previous, entry]);
@@ -85,14 +56,36 @@ function useMap() {
     setPopupPortals((previous) => previous.filter((entry) => entry.id !== id));
   });
 
-  const handleLike = useEffectEvent((id: string, isLiked: boolean) => {
-    console.log(`toggle like ${isLiked ? "on" : "off"}: "${id}"`);
+  const handleLike = useEffectEvent(
+    async (id: string, isLiked: boolean): Promise<boolean> => {
+      try {
+        await repository.toggleLike(id);
 
-    for (const { likeInfo } of placeDataList) {
-      likeInfo.count += isLiked ? 1 : -1;
-      likeInfo.isLiked = isLiked;
+        setPlaces((prevPlaces) =>
+          prevPlaces.map((place) =>
+            place.id === id
+              ? {
+                  ...place,
+                  likeInfo: {
+                    count: place.likeInfo.count + (isLiked ? 1 : -1),
+                    isLiked,
+                  },
+                }
+              : place
+          )
+        );
+
+        return true;
+      } catch (e: unknown) {
+        console.error(
+          `Failed to toggle like ${isLiked ? "on" : "off"}: "${id}"\n${JSON.stringify(e)}`
+        );
+        toast.error("操作に失敗しました");
+
+        return false;
+      }
     }
-  });
+  );
 
   const handleReport = useEffectEvent((id: string, { reason }: ReportData) => {
     console.log(`Accept deletion request "${id}": ${reason}`);
@@ -121,8 +114,12 @@ function useMap() {
   }, []);
 
   const handleSave = useEffectEvent(
-    (id: string, latLng: Leaflet.LatLng, nameData: PlaceNameData) => {
-      placeDataList.push({
+    async (
+      id: string,
+      latLng: Leaflet.LatLng,
+      nameData: PlaceNameData
+    ): Promise<boolean> => {
+      const newPlace: PlaceData = {
         id,
         latLng,
         nameData,
@@ -130,7 +127,19 @@ function useMap() {
           count: 0,
           isLiked: false,
         },
-      });
+      };
+
+      try {
+        await repository.addPlace(newPlace);
+        setPlaces((prev) => [...prev, newPlace]);
+        return true;
+      } catch (e: unknown) {
+        console.error(
+          `Failed to add: ${JSON.stringify(newPlace)}\n${JSON.stringify(e)}`
+        );
+        toast.error("地名の発音の登録に失敗しました");
+        return false;
+      }
     }
   );
 
@@ -175,7 +184,7 @@ function useMap() {
 
       function addMarker(ev: Leaflet.ContextMenuItemClickEvent) {
         if (useMapStore.getState().editingPopupId !== undefined) {
-          console.log(
+          console.error(
             "Could not create new marker because other marker is editing"
           );
           return;
@@ -184,12 +193,17 @@ function useMap() {
         const marker = L.marker(ev.latlng).addTo(markerLayer);
         mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
           mode: "edit",
-          onSave: (id, nameData) => handleSave(id, ev.latlng, nameData),
+          onSave: async (id, nameData) =>
+            await handleSave(id, ev.latlng, nameData),
         });
       }
 
+      // Load places.
+      const loadedPlaces = await repository.getPlaces();
+      setPlaces(loadedPlaces);
+
       // Add existing markers
-      for (const { id, latLng, nameData, likeInfo } of placeDataList) {
+      for (const { id, latLng, nameData, likeInfo } of loadedPlaces) {
         const marker = L.marker(latLng).addTo(markerLayer);
         mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
           mode: "display",
@@ -208,21 +222,23 @@ function useMap() {
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [repository]);
 
   return { mapElementRef, popupPortals };
 }
 
 type MapComponentProps = {
+  repository: PlaceRepository;
   className?: string;
   style?: React.CSSProperties;
 };
 
 export function MapComponent({
+  repository,
   className,
   style,
 }: MapComponentProps): React.JSX.Element {
-  const { mapElementRef, popupPortals } = useMap();
+  const { mapElementRef, popupPortals } = useMap(repository);
 
   return (
     <>

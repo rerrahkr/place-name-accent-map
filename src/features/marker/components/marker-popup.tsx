@@ -16,11 +16,11 @@ import { PlaceNameEditor } from "./place-name-editor";
 type MarkerPopupProps = {
   defaultNameData?: PlaceNameData | undefined;
   initiallyEditing?: boolean | undefined;
-  onSave: (data: PlaceNameData) => void;
+  onSave: (data: PlaceNameData) => Promise<boolean>;
   onCancel: () => void;
   likeCount: number;
   isLiked: boolean;
-  onLike: (isLiked: boolean) => void;
+  onLike: (isLiked: boolean) => Promise<boolean>;
   onReport: (reportData: ReportData) => void;
 };
 
@@ -44,14 +44,18 @@ export function MarkerPopup({
 
   const [hasSaved, setHasSaved] = useState<boolean>(!initiallyEditing);
 
-  function handleSubmit(data: PlaceNameData) {
+  async function handleSubmit(data: PlaceNameData): Promise<boolean> {
+    if ((await onSave(data)) === false) {
+      return false;
+    }
+
     setSpelling(data.spelling);
     setMoras(data.moras);
     setPitches(data.pitches);
 
     setHasSaved(true);
 
-    onSave(data);
+    return true;
   }
 
   return (

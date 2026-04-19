@@ -3,12 +3,16 @@
 
 import { Toaster } from "sonner";
 import { MapComponent } from "./components/map";
+import { inMemoryPlaceRepository } from "./repositories/in-memory-place-repository";
 
 function App() {
   return (
     <>
       <Toaster position="top-center" />
-      <MapComponent className="h-dvh w-dvw" />
+      <MapComponent
+        className="h-dvh w-dvw"
+        repository={inMemoryPlaceRepository}
+      />
     </>
   );
 }

@@ -53,8 +53,10 @@ type MountOptionEditMode = {
    * Callback function called when the marker is saved.
    * @param id Marker ID.
    * @param data Place name data.
+   * @returns Promise of boolean which represents the result of some process.
+   *          When this returns `false`, proceeding process is cancelled.
    */
-  onSave: (id: string, data: PlaceNameData) => void;
+  onSave: (id: string, data: PlaceNameData) => Promise<boolean>;
 };
 
 type MountOptions = MountOptionsDisplayMode | MountOptionEditMode;
@@ -65,6 +67,7 @@ type MountOptions = MountOptionsDisplayMode | MountOptionEditMode;
  * @param portalManager Manager of portal popup content elements.
  * @param onLike Function which is called in toggling the like button. Marker
  *               ID and the current like button state are give as arguments.
+ *               Return value is the result of callback process.
  * @param onReport Function which is called in reporting.
  *                 Marker ID and report data are given as arguments.
  * @param options Mount options. It depends on`options.mode`.
@@ -72,7 +75,7 @@ type MountOptions = MountOptionsDisplayMode | MountOptionEditMode;
 export function mountMarkerPopup(
   marker: Leaflet.Marker,
   portalManager: PopupPortalManager,
-  onLike: (id: string, isLiked: boolean) => void,
+  onLike: (id: string, isLiked: boolean) => Promise<boolean>,
   onReport: (id: string, reportData: ReportData) => void,
   options: MountOptions
 ) {
@@ -102,6 +105,25 @@ export function mountMarkerPopup(
     cleanupPopupPortal();
   }
 
+  async function handleSave(data: PlaceNameData): Promise<boolean> {
+    if (onSave === undefined) {
+      return false;
+    }
+
+    if ((await onSave(popupId, data)) === false) {
+      return false;
+    }
+
+    useMapStore.getState().finishEditing();
+
+    const popup = marker.getPopup();
+    if (popup) {
+      popup.options.closeOnClick = true;
+    }
+
+    return true;
+  }
+
   portalManager.addPortal({
     id: popupId,
     container: popupElement,
@@ -109,15 +131,7 @@ export function mountMarkerPopup(
       <MarkerPopup
         defaultNameData={nameData}
         initiallyEditing={isEditable}
-        onSave={(data) => {
-          useMapStore.getState().finishEditing();
-          onSave?.(popupId, data);
-
-          const popup = marker.getPopup();
-          if (popup) {
-            popup.options.closeOnClick = true;
-          }
-        }}
+        onSave={handleSave}
         onCancel={removeMarker}
         likeCount={likeCount}
         isLiked={isLiked}

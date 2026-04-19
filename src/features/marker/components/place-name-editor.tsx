@@ -49,7 +49,7 @@ function findFirstDiffIndex<T>(
 }
 
 export type PlaceNameEditorProps = {
-  onSubmit: (data: PlaceNameData) => void;
+  onSubmit: (data: PlaceNameData) => Promise<boolean>;
   onCancel: () => void;
 };
 
@@ -62,7 +62,7 @@ export function PlaceNameEditor({
   const [moras, setMoras] = useState<string[]>([]);
   const [pitches, setPitches] = useState<MoraPitch[]>([]);
   const [readingError, setReadingError] = useState<string>("");
-  const [relativeEntries, setRelativeEntries] = useState<RelativeEntry[]>([]);
+  const [_relativeEntries, setRelativeEntries] = useState<RelativeEntry[]>([]);
 
   // Flag to track whether the user is currently composing text.
   const isComposingRef = useRef<boolean>(false);
@@ -139,16 +139,20 @@ export function PlaceNameEditor({
     });
   }, []);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isValidEntry) {
       return;
     }
 
-    onSubmit?.({
-      spelling,
-      moras,
-      pitches,
-    });
+    if (
+      (await onSubmit({
+        spelling,
+        moras,
+        pitches,
+      })) === false
+    ) {
+      return;
+    }
 
     setSpelling("");
     setReading("");

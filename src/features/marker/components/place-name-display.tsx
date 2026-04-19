@@ -2,21 +2,26 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { FlagIcon, HeartIcon } from "lucide-react";
-import { useState } from "react";
+import { startTransition, useOptimistic, useState } from "react";
 import { type ReportData, ReportDialog } from "@/features/report";
 import { cn } from "@/lib/utils";
 import type { MoraPitch } from "@/utils/mora";
 import { AccentRenderer } from "./accent-renderer";
 
-interface PlaceNameDisplayProps {
+type LikeDisplayState = {
+  isLiked: boolean;
+  count: number;
+};
+
+type PlaceNameDisplayProps = {
   spelling: string;
   moras: string[];
   pitches: MoraPitch[];
   likeCount: number;
   isLiked: boolean;
-  onLike: (isLiked: boolean) => void;
+  onLike: (isLiked: boolean) => Promise<boolean>;
   onReport: (reportData: ReportData) => void;
-}
+};
 
 export function PlaceNameDisplay({
   spelling,
@@ -27,19 +32,29 @@ export function PlaceNameDisplay({
   onLike,
   onReport,
 }: PlaceNameDisplayProps) {
-  const [liked, setLiked] = useState<boolean>(isLiked);
-  const [count, setCount] = useState<number>(likeCount);
+  const [likeState, setLikeState] = useState<LikeDisplayState>({
+    isLiked,
+    count: likeCount,
+  });
+  const [optimisticLikeState, setOptimisticState] = useOptimistic(likeState);
 
   const [reportDialogOpened, setReportDialogOpend] = useState<boolean>(false);
 
-  function handleLike() {
-    if (liked) {
-      setCount((prev) => prev - 1);
-    } else {
-      setCount((prev) => prev + 1);
-    }
-    setLiked((prev) => !prev);
-    onLike(!liked);
+  async function handleLike() {
+    startTransition(async () => {
+      const newLiked = !optimisticLikeState.isLiked;
+      const newState: LikeDisplayState = {
+        isLiked: newLiked,
+        count: optimisticLikeState.count + (newLiked ? 1 : -1),
+      };
+      setOptimisticState(newState);
+
+      if ((await onLike(newLiked)) === false) {
+        return;
+      }
+
+      setLikeState(newState);
+    });
   }
 
   return (
@@ -66,7 +81,7 @@ export function PlaceNameDisplay({
             onClick={handleLike}
             className={cn(
               "flex items-center gap-1.5 text-sm transition-colors",
-              liked
+              optimisticLikeState.isLiked
                 ? "text-pink-500"
                 : "text-muted-foreground hover:text-pink-500"
             )}
@@ -74,10 +89,10 @@ export function PlaceNameDisplay({
             <HeartIcon
               className={cn(
                 "size-5 transition-all",
-                liked && "fill-current scale-110"
+                optimisticLikeState.isLiked && "fill-current scale-110"
               )}
             />
-            <span className="font-medium">{count}</span>
+            <span className="font-medium">{optimisticLikeState.count}</span>
           </button>
 
           {/* Report */}
