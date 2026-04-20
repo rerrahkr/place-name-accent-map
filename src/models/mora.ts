@@ -1,22 +1,21 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-export type Mora = string;
+import { z } from "zod";
+
+export const moraSchema = z
+  .string()
+  .min(1)
+  .regex(/^[\u3040-\u309F\u30F4ー]+$/);
 
 /**
- * Check whether a given text consists of valid mora characters.
- *
+ * Mora characters.
  * Valid mora characters include:
  * - Hiragana
  * - Cho-on
  * - "ヴ"
- *
- * @param text Text.
- * @returns `true` when a given text is a valid mora text.
  */
-export function isMoraText(text: string): boolean {
-  return /^[\u3040-\u309F\u30F4ー]+$/.test(text);
-}
+export type Mora = z.infer<typeof moraSchema>;
 
 const TWO_CHARS_MORAS: ReadonlyArray<Mora> = [
   "きゃ",
@@ -104,11 +103,13 @@ export function splitByMora(text: string): Mora[] {
   return moras;
 }
 
+export const moraPitchSchema = z.union([z.literal("H"), z.literal("L")]);
+
 /**
  * Pitch accent.
  *
  * "H" stands for high pitch and "L" stands for low pitch.
  */
-export type MoraPitch = "H" | "L";
+export type MoraPitch = z.infer<typeof moraPitchSchema>;
 
 export const DEFAULT_MORA_PITCH: MoraPitch = "L";

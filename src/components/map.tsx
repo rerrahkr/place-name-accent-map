@@ -12,7 +12,11 @@ import { mountMarkerPopup } from "@/features/marker";
 import { explainDeleteReason } from "@/features/report";
 import type { ReportData } from "@/features/report/types";
 import { toggleLike } from "@/models/like";
-import type { PlaceData, PlaceNameData } from "@/models/place";
+import {
+  createPlaceData,
+  type PlaceData,
+  type PlaceNameData,
+} from "@/models/place";
 import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores";
 
@@ -110,15 +114,7 @@ function useMap(repository: PlaceRepository) {
       latLng: Leaflet.LatLng,
       nameData: PlaceNameData
     ): Promise<boolean> => {
-      const newPlace: PlaceData = {
-        id,
-        latLng,
-        nameData,
-        likeState: {
-          count: 0,
-          isLiked: false,
-        },
-      };
+      const newPlace = createPlaceData(id, latLng, nameData);
 
       try {
         await repository.addPlace(newPlace);

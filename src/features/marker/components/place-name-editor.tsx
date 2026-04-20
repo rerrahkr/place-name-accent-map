@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   DEFAULT_MORA_PITCH,
-  isMoraText,
   type Mora,
   type MoraPitch,
+  moraSchema,
   splitByMora,
 } from "@/models/mora";
 import { createPlaceNameData, type PlaceNameData } from "@/models/place";
@@ -89,7 +89,7 @@ export function PlaceNameEditor({
           return;
         }
 
-        if (!isMoraText(newReading)) {
+        if (!moraSchema.safeParse(newReading).success) {
           throw "ひらがなのみで入力してください";
         }
 

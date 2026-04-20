@@ -2,23 +2,19 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import type * as Leaflet from "leaflet";
-import type { LikeState } from "./like";
-import type { Mora, MoraPitch } from "./mora";
+import { z } from "zod";
+import { createLikeState, likeStateSchema } from "./like";
+import { type Mora, type MoraPitch, moraPitchSchema, moraSchema } from "./mora";
 
-export type PlaceData = {
-  id: string;
-  latLng: Leaflet.LatLng;
-  nameData: PlaceNameData;
-  likeState: LikeState;
-};
+export const placeNameDataSchema = z
+  .object({
+    spelling: z.string().trim().min(1),
+    moras: z.array(moraSchema).min(1),
+    pitches: z.array(moraPitchSchema).min(1),
+  })
+  .refine((data) => data.moras.length === data.pitches.length);
 
-// TODO: createPlaceData
-
-export type PlaceNameData = {
-  spelling: string;
-  moras: Mora[];
-  pitches: MoraPitch[];
-};
+export type PlaceNameData = z.infer<typeof placeNameDataSchema>;
 
 /**
  * Create `PlaceNameData` object.
@@ -31,17 +27,51 @@ export function createPlaceNameData(
   moras: Mora[],
   pitches: MoraPitch[]
 ): PlaceNameData {
-  if (
-    spelling.length === 0 ||
-    moras.length === 0 ||
-    moras.length !== pitches.length
-  ) {
-    throw new Error("Invalid arguments.");
-  }
-
-  return {
+  const newData: PlaceNameData = {
     spelling,
     moras,
     pitches,
   };
+
+  placeNameDataSchema.parse(newData);
+
+  return newData;
+}
+
+export const placeDataSchema = z.object({
+  id: z.uuidv7(),
+  latLng: z.unknown(),
+  nameData: placeNameDataSchema,
+  likeState: likeStateSchema,
+});
+
+const placeDataSchemaWithoutLatLng = placeDataSchema.omit({
+  latLng: true,
+});
+
+export type PlaceData = z.infer<typeof placeDataSchemaWithoutLatLng> & {
+  latLng: Leaflet.LatLng;
+};
+
+/**
+ * Create new place data.
+ * @param id ID of place data.
+ * @param latLng Latitude and longitude.
+ * @param nameData `PlaceNameData`
+ */
+export function createPlaceData(
+  id: string,
+  latLng: Leaflet.LatLng,
+  nameData: PlaceNameData
+): PlaceData {
+  const newData: PlaceData = {
+    id,
+    latLng,
+    nameData,
+    likeState: createLikeState(),
+  };
+
+  placeDataSchema.parse(newData);
+
+  return newData;
 }

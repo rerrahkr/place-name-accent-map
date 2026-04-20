@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-export type LikeState = {
-  count: number;
-  isLiked: boolean;
-};
+import { z } from "zod";
+
+export const likeStateSchema = z.object({
+  count: z.number().nonnegative(),
+  isLiked: z.boolean(),
+});
+
+export type LikeState = z.infer<typeof likeStateSchema>;
 
 /**
  * Return a new like state.

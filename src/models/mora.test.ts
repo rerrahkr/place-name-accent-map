@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { describe, expect, it } from "vitest";
-import { isMoraText, type Mora, splitByMora } from "./mora";
+import { type Mora, moraSchema, splitByMora } from "./mora";
 
 const okCases = new Map<string, Mora[]>([
   ["とうきょう", ["と", "う", "きょ", "う"]],
@@ -15,13 +15,13 @@ const okCases = new Map<string, Mora[]>([
 describe("isMoraText", () => {
   it("should work correctly", () => {
     for (const text of okCases.keys()) {
-      expect(isMoraText(text)).toBe(true);
+      expect(moraSchema.safeParse(text).success).toBe(true);
     }
 
     const failed = ["", " ", "よみうりランド", "驫木"];
 
     for (const text of failed) {
-      expect(isMoraText(text)).toBe(false);
+      expect(moraSchema.safeParse(text).success).toBe(false);
     }
   });
 });
