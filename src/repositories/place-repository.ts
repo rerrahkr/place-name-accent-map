@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-import type { PlaceData } from "@/types";
+import type { PlaceData } from "@/models/place";
 
 /**
  * Interface of repository for place data.

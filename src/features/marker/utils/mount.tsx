@@ -9,8 +9,9 @@ import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import type React from "react";
 import type { ReportData } from "@/features/report/types";
 import { newId } from "@/lib/utils";
+import type { LikeState } from "@/models/like";
+import type { PlaceNameData } from "@/models/place";
 import { useMapStore } from "@/stores";
-import type { LikeInfo, PlaceNameData } from "@/types";
 import { MarkerPopup } from "../components/marker-popup";
 
 type PopupPortalEntry = {
@@ -43,7 +44,7 @@ type MountOptionsDisplayMode = {
   /** Marker ID. */
   id: string;
   nameData: PlaceNameData;
-  likeInfo: LikeInfo;
+  likeState: LikeState;
 };
 
 type MountOptionEditMode = {
@@ -85,7 +86,7 @@ export function mountMarkerPopup(
   const nameData = isEditable ? undefined : options.nameData;
   const { count: likeCount = 0, isLiked = false } = isEditable
     ? {}
-    : options.likeInfo;
+    : options.likeState;
 
   const popupElement = document.createElement("div");
   let isUnmounted = false;

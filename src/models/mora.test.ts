@@ -2,9 +2,9 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { describe, expect, it } from "vitest";
-import { isMoraText, splitByMora } from "./mora";
+import { isMoraText, type Mora, splitByMora } from "./mora";
 
-const okCases = new Map<string, string[]>([
+const okCases = new Map<string, Mora[]>([
   ["とうきょう", ["と", "う", "きょ", "う"]],
   ["おーさか", ["お", "ー", "さ", "か"]],
   ["おおおかやま", ["お", "お", "お", "か", "や", "ま"]],

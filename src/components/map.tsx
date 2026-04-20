@@ -11,9 +11,10 @@ import { toast } from "sonner";
 import { mountMarkerPopup } from "@/features/marker";
 import { explainDeleteReason } from "@/features/report";
 import type { ReportData } from "@/features/report/types";
+import { toggleLike } from "@/models/like";
+import type { PlaceData, PlaceNameData } from "@/models/place";
 import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores";
-import type { PlaceData, PlaceNameData } from "@/types";
 
 async function loadLeaflet(): Promise<typeof Leaflet> {
   // Dynamically import Leaflet and plugin
@@ -59,10 +60,7 @@ function useMap(repository: PlaceRepository) {
             place.id === id
               ? {
                   ...place,
-                  likeInfo: {
-                    count: place.likeInfo.count + (isLiked ? 1 : -1),
-                    isLiked,
-                  },
+                  likeState: toggleLike(place.likeState),
                 }
               : place
           )
@@ -116,7 +114,7 @@ function useMap(repository: PlaceRepository) {
         id,
         latLng,
         nameData,
-        likeInfo: {
+        likeState: {
           count: 0,
           isLiked: false,
         },
@@ -203,13 +201,13 @@ function useMap(repository: PlaceRepository) {
       setPlaces(loadedPlaces);
 
       // Add existing markers
-      for (const { id, latLng, nameData, likeInfo } of loadedPlaces) {
+      for (const { id, latLng, nameData, likeState } of loadedPlaces) {
         const marker = L.marker(latLng).addTo(markerLayer);
         mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
           mode: "display",
           id,
           nameData,
-          likeInfo,
+          likeState,
         });
       }
 

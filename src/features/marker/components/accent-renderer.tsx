@@ -3,10 +3,10 @@
 
 import type React from "react";
 import { cn } from "@/lib/utils";
-import { DEFAULT_MORA_PITCH, type MoraPitch } from "@/utils/mora";
+import { DEFAULT_MORA_PITCH, type Mora, type MoraPitch } from "@/models/mora";
 
 type AccentEditorProps = {
-  moras: string[];
+  moras: Mora[];
   pitches: MoraPitch[];
   onPitchChange?: ((index: number, pitch: MoraPitch) => void) | undefined;
 };

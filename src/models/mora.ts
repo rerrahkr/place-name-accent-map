@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
+export type Mora = string;
+
 /**
  * Check whether a given text consists of valid mora characters.
  *
@@ -16,7 +18,7 @@ export function isMoraText(text: string): boolean {
   return /^[\u3040-\u309F\u30F4ー]+$/.test(text);
 }
 
-const TWO_CHARS_MORAS = [
+const TWO_CHARS_MORAS: ReadonlyArray<Mora> = [
   "きゃ",
   "きゅ",
   "きょ",
@@ -79,7 +81,7 @@ const TWO_CHARS_MORAS = [
  * @param text Text.
  * @returns Array of moras.
  */
-export function splitByMora(text: string): string[] {
+export function splitByMora(text: string): Mora[] {
   const moras: string[] = [];
   let i = 0;
 

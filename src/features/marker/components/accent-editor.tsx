@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import type React from "react";
-import type { MoraPitch } from "@/utils/mora";
+import type { Mora, MoraPitch } from "@/models/mora";
 import { AccentRenderer } from "./accent-renderer";
 
 type AccentEditorProps = {
-  moras: string[];
+  moras: Mora[];
   pitches: MoraPitch[];
   onPitchChange: (index: number, pitch: MoraPitch) => void;
 };

@@ -7,13 +7,14 @@ import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { PlaceNameData } from "@/types";
 import {
   DEFAULT_MORA_PITCH,
   isMoraText,
+  type Mora,
   type MoraPitch,
   splitByMora,
-} from "@/utils/mora";
+} from "@/models/mora";
+import { createPlaceNameData, type PlaceNameData } from "@/models/place";
 import { AccentEditor } from "./accent-editor";
 
 type RelativeEntry = {
@@ -59,7 +60,7 @@ export function PlaceNameEditor({
 }: PlaceNameEditorProps): React.JSX.Element {
   const [spelling, setSpelling] = useState<string>("");
   const [reading, setReading] = useState<string>("");
-  const [moras, setMoras] = useState<string[]>([]);
+  const [moras, setMoras] = useState<Mora[]>([]);
   const [pitches, setPitches] = useState<MoraPitch[]>([]);
   const [readingError, setReadingError] = useState<string>("");
   const [_relativeEntries, setRelativeEntries] = useState<RelativeEntry[]>([]);
@@ -144,13 +145,8 @@ export function PlaceNameEditor({
       return;
     }
 
-    if (
-      (await onSubmit({
-        spelling,
-        moras,
-        pitches,
-      })) === false
-    ) {
+    const newData = createPlaceNameData(spelling, moras, pitches);
+    if ((await onSubmit(newData)) === false) {
       return;
     }
 

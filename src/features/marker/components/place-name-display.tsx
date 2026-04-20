@@ -5,7 +5,8 @@ import { FlagIcon, HeartIcon } from "lucide-react";
 import { startTransition, useOptimistic, useState } from "react";
 import { type ReportData, ReportDialog } from "@/features/report";
 import { cn } from "@/lib/utils";
-import type { MoraPitch } from "@/utils/mora";
+import { toggleLike } from "@/models/like";
+import type { Mora, MoraPitch } from "@/models/mora";
 import { AccentRenderer } from "./accent-renderer";
 
 type LikeDisplayState = {
@@ -15,7 +16,7 @@ type LikeDisplayState = {
 
 type PlaceNameDisplayProps = {
   spelling: string;
-  moras: string[];
+  moras: Mora[];
   pitches: MoraPitch[];
   likeCount: number;
   isLiked: boolean;
@@ -32,28 +33,33 @@ export function PlaceNameDisplay({
   onLike,
   onReport,
 }: PlaceNameDisplayProps) {
-  const [likeState, setLikeState] = useState<LikeDisplayState>({
+  const [likeDisplayState, setLikeDisplayState] = useState<LikeDisplayState>({
     isLiked,
     count: likeCount,
   });
-  const [optimisticLikeState, setOptimisticState] = useOptimistic(likeState);
+  const [optimisticLikeState, setOptimisticState] =
+    useOptimistic(likeDisplayState);
 
   const [reportDialogOpened, setReportDialogOpend] = useState<boolean>(false);
 
   async function handleLike() {
     startTransition(async () => {
-      const newLiked = !optimisticLikeState.isLiked;
-      const newState: LikeDisplayState = {
-        isLiked: newLiked,
-        count: optimisticLikeState.count + (newLiked ? 1 : -1),
-      };
-      setOptimisticState(newState);
+      const newLikeState = toggleLike({
+        isLiked: optimisticLikeState.isLiked,
+        count: optimisticLikeState.count,
+      });
 
-      if ((await onLike(newLiked)) === false) {
+      const newDisplayState: LikeDisplayState = {
+        isLiked: newLikeState.isLiked,
+        count: newLikeState.count,
+      };
+      setOptimisticState(newDisplayState);
+
+      if ((await onLike(newLikeState.isLiked)) === false) {
         return;
       }
 
-      setLikeState(newState);
+      setLikeDisplayState(newDisplayState);
     });
   }
 

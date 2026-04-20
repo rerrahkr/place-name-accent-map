@@ -3,7 +3,8 @@
 
 import Leaflet from "leaflet";
 import { newId } from "@/lib/utils";
-import type { PlaceData } from "@/types";
+import { toggleLike } from "@/models/like";
+import type { PlaceData } from "@/models/place";
 import type { PlaceRepository } from "./place-repository";
 
 const placeDataList: PlaceData[] = [
@@ -15,7 +16,7 @@ const placeDataList: PlaceData[] = [
       moras: ["と", "ー", "きょ", "ー"],
       pitches: ["L", "H", "H", "H"],
     },
-    likeInfo: {
+    likeState: {
       count: 10,
       isLiked: true,
     },
@@ -28,7 +29,7 @@ const placeDataList: PlaceData[] = [
       moras: ["し", "ん", "じゅ", "く"],
       pitches: ["L", "H", "H", "H"],
     },
-    likeInfo: {
+    likeState: {
       count: 5,
       isLiked: false,
     },
@@ -47,9 +48,7 @@ export const inMemoryPlaceRepository: PlaceRepository = {
   toggleLike: async (id: string): Promise<void> => {
     const place = placeDataList.find((p) => p.id === id);
     if (place) {
-      const newIsLiked = !place.likeInfo.isLiked;
-      place.likeInfo.count += newIsLiked ? 1 : -1;
-      place.likeInfo.isLiked = newIsLiked;
+      place.likeState = toggleLike(place.likeState);
     }
   },
 } as const;

@@ -8,8 +8,8 @@ import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import "leaflet/dist/leaflet.css";
 import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import type { ReportData } from "@/features/report/types";
-import type { PlaceNameData } from "@/types";
-import type { MoraPitch } from "@/utils/mora";
+import type { Mora, MoraPitch } from "@/models/mora";
+import type { PlaceNameData } from "@/models/place";
 import { PlaceNameDisplay } from "./place-name-display";
 import { PlaceNameEditor } from "./place-name-editor";
 
@@ -37,8 +37,8 @@ export function MarkerPopup({
   const [spelling, setSpelling] = useState<string>(
     defaultNameData?.spelling ?? ""
   );
-  const [moras, setMoras] = useState<string[]>(defaultNameData?.moras ?? []);
-  const [picthes, setPitches] = useState<MoraPitch[]>(
+  const [moras, setMoras] = useState<Mora[]>(defaultNameData?.moras ?? []);
+  const [pitches, setPitches] = useState<MoraPitch[]>(
     defaultNameData?.pitches ?? []
   );
 
@@ -64,7 +64,7 @@ export function MarkerPopup({
         <PlaceNameDisplay
           spelling={spelling}
           moras={moras}
-          pitches={picthes}
+          pitches={pitches}
           likeCount={likeCount}
           isLiked={isLiked}
           onLike={onLike}
