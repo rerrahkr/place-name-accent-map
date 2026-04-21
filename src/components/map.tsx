@@ -33,6 +33,8 @@ async function loadLeaflet(): Promise<typeof Leaflet> {
   return L;
 }
 
+const MARKER_HIDE_ZOOM_THRESHOLD = 13;
+
 type PopupPortalEntry = {
   /** The same value as the place data's ID.  */
   id: string;
@@ -45,6 +47,7 @@ function useMap(repository: PlaceRepository) {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const [popupPortals, setPopupPortals] = useState<PopupPortalEntry[]>([]);
   const [_places, setPlaces] = useState<PlaceData[]>([]);
+  const markerLayerShownRef = useRef<boolean>(false);
 
   const addPopupPortal = useEffectEvent((entry: PopupPortalEntry) => {
     setPopupPortals((previous) => [...previous, entry]);
@@ -154,7 +157,9 @@ function useMap(repository: PlaceRepository) {
             disabled: false,
           },
         ],
-      }).setView([35.681236, 139.767125], 15);
+      })
+        .setView([35.681236, 139.767125], 15)
+        .setZoom(15);
       map.on("contextmenu.show", () => {
         map.contextmenu.setDisabled(
           0,
@@ -207,7 +212,26 @@ function useMap(repository: PlaceRepository) {
         });
       }
 
-      markerLayer.addTo(map);
+      map.on("zoomend", () => {
+        // Display markers based on zoom level.
+        const zoomRate = map.getZoom();
+        if (zoomRate < MARKER_HIDE_ZOOM_THRESHOLD) {
+          if (map.hasLayer(markerLayer)) {
+            map.removeLayer(markerLayer);
+            markerLayerShownRef.current = false;
+          }
+        } else {
+          if (!map.hasLayer(markerLayer)) {
+            markerLayer.addTo(map);
+            markerLayerShownRef.current = true;
+          }
+        }
+      });
+
+      if (map.getZoom() >= MARKER_HIDE_ZOOM_THRESHOLD) {
+        markerLayer.addTo(map);
+        markerLayerShownRef.current = true;
+      }
     })();
 
     return () => {
