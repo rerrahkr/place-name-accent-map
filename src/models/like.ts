@@ -3,36 +3,19 @@
 
 import { z } from "zod";
 
-export const likeStateSchema = z.object({
-  count: z.number().nonnegative(),
-  isLiked: z.boolean(),
-});
+export const userIdSchema = z.string().trim().min(1);
 
-export type LikeState = z.infer<typeof likeStateSchema>;
+export const likedUsersSchema = z.array(userIdSchema);
 
-/**
- * Return a new like state.
- */
-export function createLikeState(): LikeState {
-  return {
-    count: 0,
-    isLiked: false,
-  };
-}
+export type LikedUsers = z.infer<typeof likedUsersSchema>;
 
 /**
- * Toggle a give like state on/off.
- * @param currentState Current like state.
- * @returns Toggled like state.
+ * Modify liked user's list by toggling like.
+ * @param current Current likes list.
+ * @param user ID of operated user.
+ * @returns Modified likes list.
  */
-export function toggleLike(currentState: LikeState): LikeState {
-  const count = currentState.isLiked
-    ? Math.max(0, currentState.count - 1)
-    : Math.max(1, currentState.count + 1);
-
-  return {
-    ...currentState,
-    count,
-    isLiked: !currentState.isLiked,
-  };
+export function toggleLike(current: LikedUsers, user: string): LikedUsers {
+  const filtered = current.filter((id) => id !== user);
+  return filtered.length === current.length ? [...filtered, user] : filtered;
 }

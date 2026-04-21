@@ -5,7 +5,6 @@ import { FlagIcon, HeartIcon } from "lucide-react";
 import { startTransition, useOptimistic, useState } from "react";
 import { type ReportData, ReportDialog } from "@/features/report";
 import { cn } from "@/lib/utils";
-import { toggleLike } from "@/models/like";
 import type { Mora, MoraPitch } from "@/models/mora";
 import { AccentRenderer } from "./accent-renderer";
 
@@ -13,6 +12,13 @@ type LikeDisplayState = {
   isLiked: boolean;
   count: number;
 };
+
+function toggleLike(current: LikeDisplayState): LikeDisplayState {
+  return {
+    isLiked: !current.isLiked,
+    count: current.count + (current.isLiked ? -1 : 1),
+  };
+}
 
 type PlaceNameDisplayProps = {
   spelling: string;

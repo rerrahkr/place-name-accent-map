@@ -1,38 +1,38 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-import Leaflet from "leaflet";
 import { newId } from "@/lib/utils";
-import { toggleLike } from "@/models/like";
 import type { PlaceData } from "@/models/place";
 import type { PlaceRepository } from "./place-repository";
 
 const placeDataList: PlaceData[] = [
   {
     id: newId(),
-    latLng: Leaflet.latLng(35.681236, 139.767125),
+    location: {
+      latitude: 35.681236,
+      longitude: 139.767125,
+    },
     nameData: {
       spelling: "東京",
       moras: ["と", "ー", "きょ", "ー"],
       pitches: ["L", "H", "H", "H"],
     },
-    likeState: {
-      count: 10,
-      isLiked: true,
-    },
+    author: "piyo",
+    likedUsers: ["hogefugapiyo", "fugafuga"],
   },
   {
     id: newId(),
-    latLng: Leaflet.latLng(35.689957, 139.700507),
+    location: {
+      latitude: 35.689957,
+      longitude: 139.700507,
+    },
     nameData: {
       spelling: "新宿",
       moras: ["し", "ん", "じゅ", "く"],
       pitches: ["L", "H", "H", "H"],
     },
-    likeState: {
-      count: 5,
-      isLiked: false,
-    },
+    author: "hogefuga",
+    likedUsers: ["piyopiyo", "piyo", "hoge", "fuga", "fugapiyo"],
   },
 ];
 
@@ -45,10 +45,14 @@ export const inMemoryPlaceRepository: PlaceRepository = {
     placeDataList.push(place);
   },
 
-  toggleLike: async (id: string): Promise<void> => {
-    const place = placeDataList.find((p) => p.id === id);
-    if (place) {
-      place.likeState = toggleLike(place.likeState);
+  updatePlace: async (place: PlaceData): Promise<void> => {
+    const index = placeDataList.findIndex(
+      (p) => p.id === place.id && p.author === place.author
+    );
+    if (index === -1) {
+      throw new Error("Not found the same id and author data.");
     }
+
+    placeDataList[index] = place;
   },
 } as const;

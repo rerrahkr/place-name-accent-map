@@ -19,8 +19,8 @@ export type PlaceRepository = {
   addPlace(place: PlaceData): Promise<void>;
 
   /**
-   * Toggle like of place data state.
-   * @param id ID of modified place data.
+   * Update given place data.
+   * @param place Edited place data.
    */
-  toggleLike(id: string): Promise<void>;
+  updatePlace(place: PlaceData): Promise<void>;
 };

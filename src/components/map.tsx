@@ -11,11 +11,11 @@ import { toast } from "sonner";
 import { mountMarkerPopup } from "@/features/marker";
 import { explainDeleteReason } from "@/features/report";
 import type { ReportData } from "@/features/report/types";
-import { toggleLike } from "@/models/like";
 import {
   createPlaceData,
   type PlaceData,
   type PlaceNameData,
+  togglePlaceDataLike,
 } from "@/models/place";
 import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores";
@@ -35,6 +35,9 @@ async function loadLeaflet(): Promise<typeof Leaflet> {
 
 const MARKER_HIDE_ZOOM_THRESHOLD = 13;
 
+// TODO: My user ID.
+const currentUserId = "hogefugapiyo";
+
 type PopupPortalEntry = {
   /** The same value as the place data's ID.  */
   id: string;
@@ -46,7 +49,7 @@ function useMap(repository: PlaceRepository) {
   const mapRef = useRef<Leaflet.Map | null>(null);
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const [popupPortals, setPopupPortals] = useState<PopupPortalEntry[]>([]);
-  const [_places, setPlaces] = useState<PlaceData[]>([]);
+  const [places, setPlaces] = useState<PlaceData[]>([]);
   const markerLayerShownRef = useRef<boolean>(false);
 
   const addPopupPortal = useEffectEvent((entry: PopupPortalEntry) => {
@@ -60,17 +63,16 @@ function useMap(repository: PlaceRepository) {
   const handleLike = useEffectEvent(
     async (id: string, isLiked: boolean): Promise<boolean> => {
       try {
-        await repository.toggleLike(id);
+        const place = places.find((place) => place.id === id);
+        if (place === undefined) {
+          throw new Error();
+        }
+
+        const newData = togglePlaceDataLike(place, currentUserId);
+        await repository.updatePlace(newData);
 
         setPlaces((prevPlaces) =>
-          prevPlaces.map((place) =>
-            place.id === id
-              ? {
-                  ...place,
-                  likeState: toggleLike(place.likeState),
-                }
-              : place
-          )
+          prevPlaces.map((place) => (place.id === id ? newData : place))
         );
 
         return true;
@@ -117,7 +119,13 @@ function useMap(repository: PlaceRepository) {
       latLng: Leaflet.LatLng,
       nameData: PlaceNameData
     ): Promise<boolean> => {
-      const newPlace = createPlaceData(id, latLng, nameData);
+      const newPlace = createPlaceData(
+        id,
+        latLng.lat,
+        latLng.lng,
+        nameData,
+        currentUserId
+      );
 
       try {
         await repository.addPlace(newPlace);
@@ -202,13 +210,16 @@ function useMap(repository: PlaceRepository) {
       setPlaces(loadedPlaces);
 
       // Add existing markers
-      for (const { id, latLng, nameData, likeState } of loadedPlaces) {
-        const marker = L.marker(latLng).addTo(markerLayer);
+      for (const { id, location, nameData, likedUsers } of loadedPlaces) {
+        const marker = L.marker([location.latitude, location.longitude]).addTo(
+          markerLayer
+        );
         mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
           mode: "display",
           id,
           nameData,
-          likeState,
+          isLiked: likedUsers.includes(currentUserId),
+          likeCount: likedUsers.length,
         });
       }
 

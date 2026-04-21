@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-import type * as Leaflet from "leaflet";
 import { z } from "zod";
-import { createLikeState, likeStateSchema } from "./like";
+import { likedUsersSchema, toggleLike, userIdSchema } from "./like";
 import { type Mora, type MoraPitch, moraPitchSchema, moraSchema } from "./mora";
 
 export const placeNameDataSchema = z
@@ -38,40 +37,62 @@ export function createPlaceNameData(
   return newData;
 }
 
+const placeIdSchema = z.uuidv7();
+const latitudeScehema = z.number().min(-90).max(90);
+const longitudeSchema = z.number().min(-180).max(180);
+
 export const placeDataSchema = z.object({
-  id: z.uuidv7(),
-  latLng: z.unknown(),
+  id: placeIdSchema,
+  location: z.object({
+    latitude: latitudeScehema,
+    longitude: longitudeSchema,
+  }),
   nameData: placeNameDataSchema,
-  likeState: likeStateSchema,
+  author: userIdSchema,
+  likedUsers: likedUsersSchema,
 });
 
-const placeDataSchemaWithoutLatLng = placeDataSchema.omit({
-  latLng: true,
-});
-
-export type PlaceData = z.infer<typeof placeDataSchemaWithoutLatLng> & {
-  latLng: Leaflet.LatLng;
-};
+export type PlaceData = z.infer<typeof placeDataSchema>;
 
 /**
  * Create new place data.
  * @param id ID of place data.
- * @param latLng Latitude and longitude.
+ * @param latitude Latitude.
+ * @param longitude Longitude.
  * @param nameData `PlaceNameData`
  */
 export function createPlaceData(
   id: string,
-  latLng: Leaflet.LatLng,
-  nameData: PlaceNameData
+  latitude: number,
+  longitude: number,
+  nameData: PlaceNameData,
+  author: string
 ): PlaceData {
   const newData: PlaceData = {
     id,
-    latLng,
+    location: {
+      latitude,
+      longitude,
+    },
     nameData,
-    likeState: createLikeState(),
+    author,
+    likedUsers: [],
   };
 
   placeDataSchema.parse(newData);
 
   return newData;
+}
+
+/**
+ * Toggle like state of given place data.
+ * @param place Modified place data.
+ * @param user User who toggles like state.
+ * @returns New place data.
+ */
+export function togglePlaceDataLike(place: PlaceData, user: string): PlaceData {
+  return {
+    ...place,
+    likedUsers: toggleLike(place.likedUsers, user),
+  };
 }
