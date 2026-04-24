@@ -2,16 +2,20 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { newId } from "@/lib/utils";
-import type { PlaceData } from "@/models/place";
+import { type Bounds, contains } from "@/models/bounds";
+import { createCoordinate } from "@/models/coordinate";
+import type { Mora, MoraPitch } from "@/models/mora";
+import {
+  createPlaceData,
+  createPlaceNameData,
+  type PlaceData,
+} from "@/models/place";
 import type { PlaceRepository } from "./place-repository";
 
-const placeDataList: PlaceData[] = [
+const datalist: PlaceData[] = [
   {
     id: newId(),
-    location: {
-      latitude: 35.681236,
-      longitude: 139.767125,
-    },
+    coordinate: createCoordinate(35.681236, 139.767125),
     nameData: {
       spelling: "東京",
       moras: ["と", "ー", "きょ", "ー"],
@@ -22,10 +26,7 @@ const placeDataList: PlaceData[] = [
   },
   {
     id: newId(),
-    location: {
-      latitude: 35.689957,
-      longitude: 139.700507,
-    },
+    coordinate: createCoordinate(35.689957, 139.700507),
     nameData: {
       spelling: "新宿",
       moras: ["し", "ん", "じゅ", "く"],
@@ -36,9 +37,50 @@ const placeDataList: PlaceData[] = [
   },
 ];
 
+const generateTestData = (count: number): PlaceData[] => {
+  const baseLat = 35.681236;
+  const baseLng = 139.767125;
+
+  return Array.from({ length: count }).map((_, i) => {
+    // 新宿駅周辺に密集させるための重み付け
+    // 70%のデータは駅のすぐ近く（約1km圏内）に、残りは少し離れた場所に配置
+    const isDense = Math.random() > 0.3;
+    const spread = isDense ? 0.03 : 0.06;
+
+    const lat = baseLat + (Math.random() - 0.5) * spread;
+    const lng = baseLng + (Math.random() - 0.5) * spread;
+
+    // モーラとピッチの数を合わせる制約を維持
+    const dummyMoras: Mora[] = ["て", "す", "と", "だ"];
+    const dummyPitches: MoraPitch[] = ["L", "H", "H", "L"];
+
+    return createPlaceData(
+      newId(),
+      lat,
+      lng,
+      createPlaceNameData(`地点${i + 1}`, dummyMoras, dummyPitches),
+      `user_${Math.floor(Math.random() * 1000)}`
+    );
+  });
+};
+
+// 100件のデータを既存のリストに追加
+const additionalData = generateTestData(100);
+const placeDataList = [...datalist, ...additionalData];
+
 export const inMemoryPlaceRepository: PlaceRepository = {
-  getPlaces: async (): Promise<PlaceData[]> => {
-    return Promise.resolve([...placeDataList]);
+  getPlaces: async (bounds?: Bounds): Promise<PlaceData[]> => {
+    if (bounds === undefined) {
+      return Promise.resolve([...placeDataList]);
+    }
+
+    return Promise.resolve(
+      placeDataList.filter(({ coordinate }) => contains(bounds, coordinate))
+    );
+  },
+
+  getPlace: async (placeId: string): Promise<PlaceData | undefined> => {
+    return Promise.resolve(placeDataList.find((place) => place.id === placeId));
   },
 
   addPlace: async (place: PlaceData): Promise<void> => {

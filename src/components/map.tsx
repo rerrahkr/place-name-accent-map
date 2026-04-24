@@ -13,7 +13,6 @@ import { explainDeleteReason } from "@/features/report";
 import type { ReportData } from "@/features/report/types";
 import {
   createPlaceData,
-  type PlaceData,
   type PlaceNameData,
   togglePlaceDataLike,
 } from "@/models/place";
@@ -49,8 +48,8 @@ function useMap(repository: PlaceRepository) {
   const mapRef = useRef<Leaflet.Map | null>(null);
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const [popupPortals, setPopupPortals] = useState<PopupPortalEntry[]>([]);
-  const [places, setPlaces] = useState<PlaceData[]>([]);
   const markerLayerShownRef = useRef<boolean>(false);
+  const displayedMarkerIds = useRef<Set<string>>(new Set<string>());
 
   const addPopupPortal = useEffectEvent((entry: PopupPortalEntry) => {
     setPopupPortals((previous) => [...previous, entry]);
@@ -63,17 +62,13 @@ function useMap(repository: PlaceRepository) {
   const handleLike = useEffectEvent(
     async (id: string, isLiked: boolean): Promise<boolean> => {
       try {
-        const place = places.find((place) => place.id === id);
+        const place = await repository.getPlace(id);
         if (place === undefined) {
           throw new Error();
         }
 
         const newData = togglePlaceDataLike(place, currentUserId);
         await repository.updatePlace(newData);
-
-        setPlaces((prevPlaces) =>
-          prevPlaces.map((place) => (place.id === id ? newData : place))
-        );
 
         return true;
       } catch (e: unknown) {
@@ -129,7 +124,6 @@ function useMap(repository: PlaceRepository) {
 
       try {
         await repository.addPlace(newPlace);
-        setPlaces((prev) => [...prev, newPlace]);
         return true;
       } catch (e: unknown) {
         console.error(
@@ -165,9 +159,8 @@ function useMap(repository: PlaceRepository) {
             disabled: false,
           },
         ],
-      })
-        .setView([35.681236, 139.767125], 15)
-        .setZoom(15);
+      }).setView([35.681236, 139.767125], 16);
+
       map.on("contextmenu.show", () => {
         map.contextmenu.setDisabled(
           0,
@@ -205,25 +198,44 @@ function useMap(repository: PlaceRepository) {
         });
       }
 
-      // Load places.
-      const loadedPlaces = await repository.getPlaces();
-      setPlaces(loadedPlaces);
-
-      // Add existing markers
-      for (const { id, location, nameData, likedUsers } of loadedPlaces) {
-        const marker = L.marker([location.latitude, location.longitude]).addTo(
-          markerLayer
-        );
-        mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
-          mode: "display",
-          id,
-          nameData,
-          isLiked: likedUsers.includes(currentUserId),
-          likeCount: likedUsers.length,
+      async function updateDisplayedMarkers() {
+        // Add existing markers which exist within displayed bounds.
+        const leafletBounds = map.getBounds();
+        const placesInBounds = await repository.getPlaces({
+          north: leafletBounds.getNorth(),
+          south: leafletBounds.getSouth(),
+          east: leafletBounds.getEast(),
+          west: leafletBounds.getWest(),
         });
+
+        for (const { id, coordinate, nameData, likedUsers } of placesInBounds) {
+          if (displayedMarkerIds.current.has(id)) {
+            continue;
+          }
+
+          const marker = L.marker([
+            coordinate.latitude,
+            coordinate.longitude,
+          ]).addTo(markerLayer);
+          mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
+            mode: "display",
+            id,
+            nameData,
+            isLiked: likedUsers.includes(currentUserId),
+            likeCount: likedUsers.length,
+          });
+
+          displayedMarkerIds.current.add(id);
+        }
       }
 
-      map.on("zoomend", () => {
+      await updateDisplayedMarkers();
+
+      map.on("moveend", async () => {
+        await updateDisplayedMarkers();
+      });
+
+      map.on("zoomend", async () => {
         // Display markers based on zoom level.
         const zoomRate = map.getZoom();
         if (zoomRate < MARKER_HIDE_ZOOM_THRESHOLD) {
@@ -232,6 +244,8 @@ function useMap(repository: PlaceRepository) {
             markerLayerShownRef.current = false;
           }
         } else {
+          await updateDisplayedMarkers();
+
           if (!map.hasLayer(markerLayer)) {
             markerLayer.addTo(map);
             markerLayerShownRef.current = true;

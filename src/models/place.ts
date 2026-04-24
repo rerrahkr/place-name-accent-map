@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { z } from "zod";
+import { coordinateSchema, createCoordinate } from "./coordinate";
 import { likedUsersSchema, toggleLike, userIdSchema } from "./like";
 import { type Mora, type MoraPitch, moraPitchSchema, moraSchema } from "./mora";
 
@@ -37,16 +38,11 @@ export function createPlaceNameData(
   return newData;
 }
 
-const placeIdSchema = z.uuidv7();
-const latitudeScehema = z.number().min(-90).max(90);
-const longitudeSchema = z.number().min(-180).max(180);
+export const placeIdSchema = z.uuidv7();
 
 export const placeDataSchema = z.object({
   id: placeIdSchema,
-  location: z.object({
-    latitude: latitudeScehema,
-    longitude: longitudeSchema,
-  }),
+  coordinate: coordinateSchema,
   nameData: placeNameDataSchema,
   author: userIdSchema,
   likedUsers: likedUsersSchema,
@@ -70,10 +66,7 @@ export function createPlaceData(
 ): PlaceData {
   const newData: PlaceData = {
     id,
-    location: {
-      latitude,
-      longitude,
-    },
+    coordinate: createCoordinate(latitude, longitude),
     nameData,
     author,
     likedUsers: [],
