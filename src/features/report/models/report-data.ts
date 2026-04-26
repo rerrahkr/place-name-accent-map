@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-import type { DeleteReason } from "../types";
+export const DELETE_REASONS = [
+  "inappropriate",
+  "spam",
+  "duplicate",
+  "incorrect",
+] as const;
+export type DeleteReason = (typeof DELETE_REASONS)[number];
 
 const DELETE_REASON_TEXT: Readonly<Record<DeleteReason, string>> = {
   inappropriate: "不適切な内容",
@@ -13,3 +19,7 @@ const DELETE_REASON_TEXT: Readonly<Record<DeleteReason, string>> = {
 export function explainDeleteReason(reason: DeleteReason): string {
   return DELETE_REASON_TEXT[reason];
 }
+
+export type ReportData = {
+  reason: DeleteReason;
+};

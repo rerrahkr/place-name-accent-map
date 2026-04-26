@@ -13,9 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DELETE_REASONS } from "../consts";
-import type { DeleteReason, ReportData } from "../types";
-import { explainDeleteReason } from "../utils/report-data";
+import type { DeleteReason, ReportData } from "../models/report-data";
+import { DELETE_REASONS, explainDeleteReason } from "../models/report-data";
 
 type ReportDialogProps = {
   isOpen: boolean;

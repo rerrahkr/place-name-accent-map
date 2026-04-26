@@ -3,11 +3,7 @@
 
 import type React from "react";
 import { useState } from "react";
-import "leaflet/dist/leaflet.css";
-import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
-import "leaflet/dist/leaflet.css";
-import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
-import type { ReportData } from "@/features/report/types";
+import type { ReportData } from "@/features/report";
 import type { Mora, MoraPitch } from "@/models/mora";
 import type { PlaceNameData } from "@/models/place";
 import { PlaceNameDisplay } from "./place-name-display";

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { Toaster } from "sonner";
-import { MapComponent } from "./components/map";
+import { MapComponent } from "./features/map";
 import { inMemoryPlaceRepository } from "./repositories/in-memory-place-repository";
 
 function App() {

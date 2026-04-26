@@ -2,15 +2,10 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import type * as Leaflet from "leaflet";
-import type React from "react";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import "leaflet/dist/leaflet.css";
-import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { toast } from "sonner";
-import { mountMarkerPopup } from "@/features/marker";
-import { explainDeleteReason } from "@/features/report";
-import type { ReportData } from "@/features/report/types";
+import type { MountMarkerPopup } from "@/features/marker";
+import { explainDeleteReason, type ReportData } from "@/features/report";
 import {
   createPlaceData,
   type PlaceNameData,
@@ -19,7 +14,8 @@ import {
 import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores";
 
-async function loadLeaflet(): Promise<typeof Leaflet> {
+// TODO: can exportable?
+export async function loadLeaflet(): Promise<typeof Leaflet> {
   // Dynamically import Leaflet and plugin
   const L = (await import("leaflet")).default;
 
@@ -37,27 +33,14 @@ const MARKER_HIDE_ZOOM_THRESHOLD = 13;
 // TODO: My user ID.
 const currentUserId = "hogefugapiyo";
 
-type PopupPortalEntry = {
-  /** The same value as the place data's ID.  */
-  id: string;
-  container: HTMLDivElement;
-  content: React.ReactNode;
-};
-
-function useMap(repository: PlaceRepository) {
+export function useMap(
+  repository: PlaceRepository,
+  mountMarkerPopup: MountMarkerPopup
+) {
   const mapRef = useRef<Leaflet.Map | null>(null);
   const mapElementRef = useRef<HTMLDivElement | null>(null);
-  const [popupPortals, setPopupPortals] = useState<PopupPortalEntry[]>([]);
   const markerLayerShownRef = useRef<boolean>(false);
   const displayedMarkerIds = useRef<Set<string>>(new Set<string>());
-
-  const addPopupPortal = useEffectEvent((entry: PopupPortalEntry) => {
-    setPopupPortals((previous) => [...previous, entry]);
-  });
-
-  const removePopupPortal = useEffectEvent((id: string) => {
-    setPopupPortals((previous) => previous.filter((entry) => entry.id !== id));
-  });
 
   const handleLike = useEffectEvent(
     async (id: string, isLiked: boolean): Promise<boolean> => {
@@ -177,11 +160,6 @@ function useMap(repository: PlaceRepository) {
       // Initialize marker layer
       const markerLayer = L.featureGroup();
 
-      const portalManager = {
-        addPortal: addPopupPortal,
-        removePortal: removePopupPortal,
-      };
-
       function addMarker(ev: Leaflet.ContextMenuItemClickEvent) {
         if (useMapStore.getState().editingPopupId !== undefined) {
           console.error(
@@ -191,7 +169,7 @@ function useMap(repository: PlaceRepository) {
         }
 
         const marker = L.marker(ev.latlng).addTo(markerLayer);
-        mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
+        mountMarkerPopup(marker, handleLike, handleReport, {
           mode: "edit",
           onSave: async (id, nameData) =>
             await handleSave(id, ev.latlng, nameData),
@@ -217,7 +195,7 @@ function useMap(repository: PlaceRepository) {
             coordinate.latitude,
             coordinate.longitude,
           ]).addTo(markerLayer);
-          mountMarkerPopup(marker, portalManager, handleLike, handleReport, {
+          mountMarkerPopup(marker, handleLike, handleReport, {
             mode: "display",
             id,
             nameData,
@@ -265,30 +243,7 @@ function useMap(repository: PlaceRepository) {
         mapRef.current = null;
       }
     };
-  }, [repository]);
+  }, [repository, mountMarkerPopup]);
 
-  return { mapElementRef, popupPortals };
-}
-
-type MapComponentProps = {
-  repository: PlaceRepository;
-  className?: string;
-  style?: React.CSSProperties;
-};
-
-export function MapComponent({
-  repository,
-  className,
-  style,
-}: MapComponentProps): React.JSX.Element {
-  const { mapElementRef, popupPortals } = useMap(repository);
-
-  return (
-    <>
-      <div ref={mapElementRef} className={className} style={style} />
-      {popupPortals.map(({ id, container, content }) =>
-        createPortal(content, container, id)
-      )}
-    </>
-  );
+  return { mapElementRef };
 }
