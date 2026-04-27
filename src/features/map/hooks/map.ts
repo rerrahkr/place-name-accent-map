@@ -6,6 +6,7 @@ import { useEffect, useEffectEvent, useRef } from "react";
 import { toast } from "sonner";
 import type { MountMarkerPopup } from "@/features/marker";
 import { explainDeleteReason, type ReportData } from "@/features/report";
+import { getL } from "@/lib/leaflet";
 import {
   createPlaceData,
   type PlaceNameData,
@@ -13,20 +14,6 @@ import {
 } from "@/models/place";
 import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores/edit";
-
-// TODO: can exportable?
-export async function loadLeaflet(): Promise<typeof Leaflet> {
-  // Dynamically import Leaflet and plugin
-  const L = (await import("leaflet")).default;
-
-  // Plugin uses the global L variable, so we need to set it on `window`
-  // biome-ignore lint/suspicious/noExplicitAny: no need to strictly type window.L
-  (window as any).L = L;
-
-  await import("leaflet-contextmenu");
-
-  return L;
-}
 
 const MARKER_HIDE_ZOOM_THRESHOLD = 13;
 
@@ -66,6 +53,7 @@ export function useMap(
   );
 
   const handleReport = useEffectEvent((id: string, { reason }: ReportData) => {
+    // TODO: report
     console.log(`Accept deletion request "${id}": ${reason}`);
 
     toast.success(`削除依頼を受け付けました`, {
@@ -125,7 +113,7 @@ export function useMap(
     }
 
     (async () => {
-      const L = await loadLeaflet();
+      const L = await getL();
 
       if (mapRef.current) {
         return;
