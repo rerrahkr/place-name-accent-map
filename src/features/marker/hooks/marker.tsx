@@ -6,7 +6,7 @@ import { useCallback } from "react";
 import type { ReportData } from "@/features/report";
 import { newId } from "@/lib/utils";
 import type { PlaceNameData } from "@/models/place";
-import { useMapStore } from "@/stores";
+import { useMapStore } from "@/stores/edit";
 import { MarkerPopup } from "../components/marker-popup";
 import { usePopupPortal } from "./popup";
 

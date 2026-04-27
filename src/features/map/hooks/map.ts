@@ -12,7 +12,7 @@ import {
   togglePlaceDataLike,
 } from "@/models/place";
 import type { PlaceRepository } from "@/repositories/place-repository";
-import { useMapStore } from "@/stores";
+import { useMapStore } from "@/stores/edit";
 
 // TODO: can exportable?
 export async function loadLeaflet(): Promise<typeof Leaflet> {
