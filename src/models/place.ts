@@ -2,9 +2,11 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { z } from "zod";
+import { newId } from "@/lib/utils";
 import { coordinateSchema, createCoordinate } from "./coordinate";
-import { likedUsersSchema, toggleLike, userIdSchema } from "./like";
+import { likedUsersSchema, toggleLike } from "./like";
 import { type Mora, type MoraPitch, moraPitchSchema, moraSchema } from "./mora";
+import { type UserId, userIdSchema } from "./user";
 
 export const placeNameDataSchema = z
   .object({
@@ -38,7 +40,11 @@ export function createPlaceNameData(
   return newData;
 }
 
-export const placeIdSchema = z.uuidv7();
+export const placeIdSchema = z.uuidv7().brand<"PlaceId">();
+export type PlaceId = z.infer<typeof placeIdSchema>;
+export function createNewPlaceId(): PlaceId {
+  return placeIdSchema.parse(newId());
+}
 
 export const placeDataSchema = z.object({
   id: placeIdSchema,
@@ -56,13 +62,14 @@ export type PlaceData = z.infer<typeof placeDataSchema>;
  * @param latitude Latitude.
  * @param longitude Longitude.
  * @param nameData `PlaceNameData`
+ * @param author User ID of author.
  */
 export function createPlaceData(
-  id: string,
+  id: PlaceId,
   latitude: number,
   longitude: number,
   nameData: PlaceNameData,
-  author: string
+  author: UserId
 ): PlaceData {
   const newData: PlaceData = {
     id,
@@ -83,7 +90,7 @@ export function createPlaceData(
  * @param user User who toggles like state.
  * @returns New place data.
  */
-export function togglePlaceDataLike(place: PlaceData, user: string): PlaceData {
+export function togglePlaceDataLike(place: PlaceData, user: UserId): PlaceData {
   return {
     ...place,
     likedUsers: toggleLike(place.likedUsers, user),

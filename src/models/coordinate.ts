@@ -25,7 +25,5 @@ export function createCoordinate(
     longitude,
   };
 
-  coordinateSchema.parse(data);
-
-  return data;
+  return coordinateSchema.parse(data);
 }

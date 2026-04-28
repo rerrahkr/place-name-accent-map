@@ -4,8 +4,11 @@
 import type * as Leaflet from "leaflet";
 import { useCallback } from "react";
 import type { ReportData } from "@/features/report";
-import { newId } from "@/lib/utils";
-import type { PlaceNameData } from "@/models/place";
+import {
+  createNewPlaceId,
+  type PlaceId,
+  type PlaceNameData,
+} from "@/models/place";
 import { useMapStore } from "@/stores/edit";
 import { MarkerPopup } from "../components/marker-popup";
 import { usePopupPortal } from "./popup";
@@ -14,7 +17,7 @@ type MountOptionsDisplayMode = {
   mode: "display";
 
   /** Marker ID. */
-  id: string;
+  id: PlaceId;
   nameData: PlaceNameData;
   isLiked: boolean;
   likeCount: number;
@@ -30,7 +33,7 @@ type MountOptionEditMode = {
    * @returns Promise of boolean which represents the result of some process.
    *          When this returns `false`, proceeding process is cancelled.
    */
-  onSave: (id: string, data: PlaceNameData) => Promise<boolean>;
+  onSave: (id: PlaceId, data: PlaceNameData) => Promise<boolean>;
 };
 
 type MountOptions = MountOptionsDisplayMode | MountOptionEditMode;
@@ -51,13 +54,13 @@ export function useMarker() {
   const mountMarkerPopup = useCallback(
     (
       marker: Leaflet.Marker,
-      onLike: (id: string, isLiked: boolean) => Promise<boolean>,
-      onReport: (id: string, reportData: ReportData) => void,
+      onLike: (id: PlaceId, isLiked: boolean) => Promise<boolean>,
+      onReport: (id: PlaceId, reportData: ReportData) => void,
       options: MountOptions
     ) => {
       const isEditable = options.mode === "edit";
       const onSave = isEditable ? options.onSave : undefined;
-      const popupId = isEditable ? newId() : options.id;
+      const popupId = isEditable ? createNewPlaceId() : options.id;
       const nameData = isEditable ? undefined : options.nameData;
       const isLiked = isEditable ? false : options.isLiked;
       const likeCount = isEditable ? 0 : options.likeCount;

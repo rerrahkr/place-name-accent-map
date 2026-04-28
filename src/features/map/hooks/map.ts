@@ -9,16 +9,18 @@ import { explainDeleteReason, type ReportData } from "@/features/report";
 import { getL } from "@/lib/leaflet";
 import {
   createPlaceData,
+  type PlaceId,
   type PlaceNameData,
   togglePlaceDataLike,
 } from "@/models/place";
+import { userIdSchema } from "@/models/user";
 import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores/edit";
 
 const MARKER_HIDE_ZOOM_THRESHOLD = 13;
 
 // TODO: My user ID.
-const currentUserId = "hogefugapiyo";
+const currentUserId = userIdSchema.parse("hogefugapiyo");
 
 export function useMap(
   repository: PlaceRepository,
@@ -27,10 +29,10 @@ export function useMap(
   const mapRef = useRef<Leaflet.Map | null>(null);
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const markerLayerShownRef = useRef<boolean>(false);
-  const displayedMarkerIds = useRef<Set<string>>(new Set<string>());
+  const displayedMarkerIds = useRef<Set<PlaceId>>(new Set<PlaceId>());
 
   const handleLike = useEffectEvent(
-    async (id: string, isLiked: boolean): Promise<boolean> => {
+    async (id: PlaceId, isLiked: boolean): Promise<boolean> => {
       try {
         const place = await repository.getPlace(id);
         if (place === undefined) {
@@ -52,7 +54,7 @@ export function useMap(
     }
   );
 
-  const handleReport = useEffectEvent((id: string, { reason }: ReportData) => {
+  const handleReport = useEffectEvent((id: PlaceId, { reason }: ReportData) => {
     // TODO: report
     console.log(`Accept deletion request "${id}": ${reason}`);
 
@@ -81,7 +83,7 @@ export function useMap(
 
   const handleSave = useEffectEvent(
     async (
-      id: string,
+      id: PlaceId,
       latLng: Leaflet.LatLng,
       nameData: PlaceNameData
     ): Promise<boolean> => {

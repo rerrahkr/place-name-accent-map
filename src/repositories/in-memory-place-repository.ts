@@ -1,39 +1,44 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-import { newId } from "@/lib/utils";
 import { type Bounds, contains } from "@/models/bounds";
 import { createCoordinate } from "@/models/coordinate";
 import type { Mora, MoraPitch } from "@/models/mora";
 import {
+  createNewPlaceId,
   createPlaceData,
   createPlaceNameData,
   type PlaceData,
 } from "@/models/place";
+import { userIdSchema } from "@/models/user";
 import type { PlaceRepository } from "./place-repository";
 
 const datalist: PlaceData[] = [
   {
-    id: newId(),
+    id: createNewPlaceId(),
     coordinate: createCoordinate(35.681236, 139.767125),
     nameData: {
       spelling: "東京",
       moras: ["と", "ー", "きょ", "ー"],
       pitches: ["L", "H", "H", "H"],
     },
-    author: "piyo",
-    likedUsers: ["hogefugapiyo", "fugafuga"],
+    author: userIdSchema.parse("piyo"),
+    likedUsers: ["hogefugapiyo", "fugafuga"].map((id) =>
+      userIdSchema.parse(id)
+    ),
   },
   {
-    id: newId(),
+    id: createNewPlaceId(),
     coordinate: createCoordinate(35.689957, 139.700507),
     nameData: {
       spelling: "新宿",
       moras: ["し", "ん", "じゅ", "く"],
       pitches: ["L", "H", "H", "H"],
     },
-    author: "hogefuga",
-    likedUsers: ["piyopiyo", "piyo", "hoge", "fuga", "fugapiyo"],
+    author: userIdSchema.parse("hogefuga"),
+    likedUsers: ["piyopiyo", "piyo", "hoge", "fuga", "fugapiyo"].map((id) =>
+      userIdSchema.parse(id)
+    ),
   },
 ];
 
@@ -55,11 +60,11 @@ const generateTestData = (count: number): PlaceData[] => {
     const dummyPitches: MoraPitch[] = ["L", "H", "H", "L"];
 
     return createPlaceData(
-      newId(),
+      createNewPlaceId(),
       lat,
       lng,
       createPlaceNameData(`地点${i + 1}`, dummyMoras, dummyPitches),
-      `user_${Math.floor(Math.random() * 1000)}`
+      userIdSchema.parse(`user_${Math.floor(Math.random() * 1000)}`)
     );
   });
 };

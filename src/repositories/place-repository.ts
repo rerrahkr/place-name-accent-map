@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import type { Bounds } from "@/models/bounds";
-import type { PlaceData } from "@/models/place";
+import type { PlaceData, PlaceId } from "@/models/place";
 
 /**
  * Interface of repository for place data.
@@ -19,7 +19,7 @@ export type PlaceRepository = {
    * Get place data which has a given ID.
    * @param placeId ID of place data.
    */
-  getPlace: (placeId: string) => Promise<PlaceData | undefined>;
+  getPlace: (placeId: PlaceId) => Promise<PlaceData | undefined>;
 
   /**
    * Add a new place data.
