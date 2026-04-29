@@ -4,11 +4,8 @@
 import type * as Leaflet from "leaflet";
 import { useCallback } from "react";
 import type { ReportData } from "@/features/report";
-import {
-  createNewPlaceId,
-  type PlaceId,
-  type PlaceNameData,
-} from "@/models/place";
+import { createNewPlaceId, type PlaceId } from "@/models/place";
+import type { PlaceNameData } from "@/models/place-name";
 import { useMapStore } from "@/stores/edit";
 import { MarkerPopup } from "../components/marker-popup";
 import { usePopupPortal } from "./popup";

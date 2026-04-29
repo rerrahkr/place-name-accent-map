@@ -5,7 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import type { ReportData } from "@/features/report";
 import type { Mora, MoraPitch } from "@/models/mora";
-import type { PlaceNameData } from "@/models/place";
+import type { PlaceNameData } from "@/models/place-name";
 import { PlaceNameDisplay } from "./place-name-display";
 import { PlaceNameEditor } from "./place-name-editor";
 

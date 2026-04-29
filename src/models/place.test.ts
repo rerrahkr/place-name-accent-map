@@ -2,12 +2,14 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { describe, expect, it } from "vitest";
-import { createPlaceNameData, type PlaceNameData } from "./place";
+import { createPlaceNameData, type PlaceNameData } from "./place-name";
+import { readingKeySchema } from "./reading-key";
 
 const correctPlaceNameData: PlaceNameData = {
   spelling: "品川",
   moras: ["し", "な", "が", "わ"],
   pitches: ["L", "H", "H", "H"],
+  readingKey: readingKeySchema.parse("shinagawa"),
 };
 
 describe("createPlaceNameData", () => {

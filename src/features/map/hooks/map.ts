@@ -10,9 +10,9 @@ import { getL } from "@/lib/leaflet";
 import {
   createPlaceData,
   type PlaceId,
-  type PlaceNameData,
   togglePlaceDataLike,
 } from "@/models/place";
+import type { PlaceNameData } from "@/models/place-name";
 import { userIdSchema } from "@/models/user";
 import type { PlaceRepository } from "@/repositories/place-repository";
 import { useMapStore } from "@/stores/edit";

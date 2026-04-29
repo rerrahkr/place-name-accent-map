@@ -14,7 +14,7 @@ import {
   moraSchema,
   splitByMora,
 } from "@/models/mora";
-import { createPlaceNameData, type PlaceNameData } from "@/models/place";
+import { createPlaceNameData, type PlaceNameData } from "@/models/place-name";
 import { AccentEditor } from "./accent-editor";
 
 type RelativeEntry = {

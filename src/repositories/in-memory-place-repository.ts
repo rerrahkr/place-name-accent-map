@@ -7,9 +7,10 @@ import type { Mora, MoraPitch } from "@/models/mora";
 import {
   createNewPlaceId,
   createPlaceData,
-  createPlaceNameData,
   type PlaceData,
 } from "@/models/place";
+import { createPlaceNameData } from "@/models/place-name";
+import { readingKeySchema } from "@/models/reading-key";
 import { userIdSchema } from "@/models/user";
 import type { PlaceRepository } from "./place-repository";
 
@@ -21,6 +22,7 @@ const datalist: PlaceData[] = [
       spelling: "東京",
       moras: ["と", "ー", "きょ", "ー"],
       pitches: ["L", "H", "H", "H"],
+      readingKey: readingKeySchema.parse("tokyo"),
     },
     author: userIdSchema.parse("piyo"),
     likedUsers: ["hogefugapiyo", "fugafuga"].map((id) =>
@@ -34,6 +36,7 @@ const datalist: PlaceData[] = [
       spelling: "新宿",
       moras: ["し", "ん", "じゅ", "く"],
       pitches: ["L", "H", "H", "H"],
+      readingKey: readingKeySchema.parse("shinjuku"),
     },
     author: userIdSchema.parse("hogefuga"),
     likedUsers: ["piyopiyo", "piyo", "hoge", "fuga", "fugapiyo"].map((id) =>
