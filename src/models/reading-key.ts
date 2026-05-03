@@ -220,7 +220,11 @@ const VOWEL_FUSION_MAP: Record<string, string> = {
   ou: "o",
 };
 
-export function createReadingKey(moras: Mora[]): ReadingKey {
+export function createReadingKey(key: string): ReadingKey {
+  return readingKeySchema.parse(key);
+}
+
+export function createReadingKeyFromMoras(moras: Mora[]): ReadingKey {
   const rawReading = moras.join("");
   let result = "";
 
@@ -278,5 +282,5 @@ export function createReadingKey(moras: Mora[]): ReadingKey {
   // Normalize sequential vowels in result.
   result = result.replace(/([aiueo])\1+/g, "$1");
 
-  return readingKeySchema.parse(result);
+  return createReadingKey(result);
 }

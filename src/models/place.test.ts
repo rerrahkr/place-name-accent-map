@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { describe, expect, it } from "vitest";
-import { createPlaceNameData, type PlaceNameData } from "./place-name";
+import { createNewPlaceNameData, type PlaceNameData } from "./place-name";
 import { readingKeySchema } from "./reading-key";
 
 const correctPlaceNameData: PlaceNameData = {
@@ -15,7 +15,7 @@ const correctPlaceNameData: PlaceNameData = {
 describe("createPlaceNameData", () => {
   it("should create a instance correctly", () => {
     expect(
-      createPlaceNameData(
+      createNewPlaceNameData(
         correctPlaceNameData.spelling,
         correctPlaceNameData.moras,
         correctPlaceNameData.pitches
@@ -24,12 +24,14 @@ describe("createPlaceNameData", () => {
   });
 
   it("should be failed to create instances", () => {
-    expect(() => createPlaceNameData("", ["あ"], ["H"])).toThrow();
-    expect(() => createPlaceNameData("あ", ["", "こ"], ["H", "H"])).toThrow();
-    expect(() => createPlaceNameData("あ", [], [])).toThrow();
-    expect(() => createPlaceNameData("あ", [""], ["H"])).toThrow();
-    expect(() => createPlaceNameData("あ", ["a"], ["H"])).toThrow();
-    expect(() => createPlaceNameData("あ", ["あ", "ー"], ["H"])).toThrow();
-    expect(() => createPlaceNameData("あ", ["あ"], ["H", "L"])).toThrow();
+    expect(() => createNewPlaceNameData("", ["あ"], ["H"])).toThrow();
+    expect(() =>
+      createNewPlaceNameData("あ", ["", "こ"], ["H", "H"])
+    ).toThrow();
+    expect(() => createNewPlaceNameData("あ", [], [])).toThrow();
+    expect(() => createNewPlaceNameData("あ", [""], ["H"])).toThrow();
+    expect(() => createNewPlaceNameData("あ", ["a"], ["H"])).toThrow();
+    expect(() => createNewPlaceNameData("あ", ["あ", "ー"], ["H"])).toThrow();
+    expect(() => createNewPlaceNameData("あ", ["あ"], ["H", "L"])).toThrow();
   });
 });

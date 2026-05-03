@@ -14,7 +14,10 @@ import {
   moraSchema,
   splitByMora,
 } from "@/models/mora";
-import { createPlaceNameData, type PlaceNameData } from "@/models/place-name";
+import {
+  createNewPlaceNameData,
+  type PlaceNameData,
+} from "@/models/place-name";
 import { AccentEditor } from "./accent-editor";
 
 type RelativeEntry = {
@@ -145,7 +148,7 @@ export function PlaceNameEditor({
       return;
     }
 
-    const newData = createPlaceNameData(spelling, moras, pitches);
+    const newData = createNewPlaceNameData(spelling, moras, pitches);
     if ((await onSubmit(newData)) === false) {
       return;
     }

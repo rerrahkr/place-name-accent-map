@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import type { MountMarkerPopup } from "@/features/marker";
 import { explainDeleteReason, type ReportData } from "@/features/report";
 import { getL } from "@/lib/leaflet";
+import { createCoordinate } from "@/models/coordinate";
 import {
-  createPlaceData,
+  createNewPlaceData,
   type PlaceId,
   togglePlaceDataLike,
 } from "@/models/place";
@@ -87,10 +88,9 @@ export function useMap(
       latLng: Leaflet.LatLng,
       nameData: PlaceNameData
     ): Promise<boolean> => {
-      const newPlace = createPlaceData(
+      const newPlace = createNewPlaceData(
         id,
-        latLng.lat,
-        latLng.lng,
+        createCoordinate(latLng.lat, latLng.lng),
         nameData,
         currentUserId
       );

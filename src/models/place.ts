@@ -2,16 +2,21 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { z } from "zod";
-import { newId } from "@/lib/utils";
-import { coordinateSchema, createCoordinate } from "./coordinate";
-import { likedUsersSchema, toggleLike } from "./like";
+import { newId } from "@/lib/id";
+import { type Coordinate, coordinateSchema } from "./coordinate";
+import { type LikedUsers, likedUsersSchema, toggleLike } from "./like";
 import { type PlaceNameData, placeNameDataSchema } from "./place-name";
 import { type UserId, userIdSchema } from "./user";
 
 export const placeIdSchema = z.uuidv7().brand<"PlaceId">();
 export type PlaceId = z.infer<typeof placeIdSchema>;
+
+export function createPlaceId(id: string): PlaceId {
+  return placeIdSchema.parse(id);
+}
+
 export function createNewPlaceId(): PlaceId {
-  return placeIdSchema.parse(newId());
+  return createPlaceId(newId());
 }
 
 export const placeDataSchema = z.object({
@@ -25,31 +30,47 @@ export const placeDataSchema = z.object({
 export type PlaceData = z.infer<typeof placeDataSchema>;
 
 /**
- * Create new place data.
+ * Create a place data.
  * @param id ID of place data.
- * @param latitude Latitude.
- * @param longitude Longitude.
+ * @param coordinate Coordinate.
  * @param nameData `PlaceNameData`
  * @param author User ID of author.
+ * @param likedUsers List of users who like this data.
  */
 export function createPlaceData(
   id: PlaceId,
-  latitude: number,
-  longitude: number,
+  coordinate: Coordinate,
   nameData: PlaceNameData,
-  author: UserId
+  author: UserId,
+  likedUsers: LikedUsers
 ): PlaceData {
   const newData: PlaceData = {
     id,
-    coordinate: createCoordinate(latitude, longitude),
+    coordinate,
     nameData,
     author,
-    likedUsers: [],
+    likedUsers,
   };
 
   placeDataSchema.parse(newData);
 
   return newData;
+}
+
+/**
+ * Create a new place data.
+ * @param id ID of place data.
+ * @param coordinate Coordinate.
+ * @param nameData `PlaceNameData`
+ * @param author User ID of author.
+ */
+export function createNewPlaceData(
+  id: PlaceId,
+  coordinate: Coordinate,
+  nameData: PlaceNameData,
+  author: UserId
+): PlaceData {
+  return createPlaceData(id, coordinate, nameData, author, []);
 }
 
 /**
