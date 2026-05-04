@@ -11,9 +11,8 @@ export type PlaceRepository = {
   /**
    * Get some place data.
    * @param bounds Bounding box to filter places.
-   *               If this is omitted, all place data are returned.
    */
-  getPlaces: (bounds?: Bounds) => Promise<PlaceData[]>;
+  getPlaces: (bounds: Bounds) => Promise<PlaceData[]>;
 
   /**
    * Get place data which has a given ID.

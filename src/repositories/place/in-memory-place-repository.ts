@@ -2,9 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { ZodError } from "zod";
-import { encode } from "@/lib/geohash";
-import { type Bounds, contains } from "@/models/bounds";
-import { createCoordinate } from "@/models/coordinate";
+import type { Bounds } from "@/models/bounds";
 import { createNewPlaceId, type PlaceData, type PlaceId } from "@/models/place";
 import {
   type LikeListRequest,
@@ -30,6 +28,19 @@ import {
   ServerRuleError,
   ServerSystemError,
 } from "./errors";
+import {
+  boundsToGridGeoHashes,
+  createGeoHash,
+  createGridGeoHash,
+  type GridGeoHash,
+  isInGridGeoHash,
+} from "./geohash";
+import {
+  getPlaceFromCache,
+  getPlacesInGridFromCache,
+  gridIsRegisteredInCache,
+  registerPlacesToCache,
+} from "./place-cache";
 import type { PlaceRepository } from "./place-repository";
 
 type PlaceDataDocument = PlaceDataResponse;
@@ -41,7 +52,7 @@ const datalist: PlaceDataDocument[] = [
     id: createNewPlaceId(),
     latitude: 35.681236,
     longitude: 139.767125,
-    geohash: encode({
+    geohash: createGeoHash({
       latitude: 35.681236,
       longitude: 139.767125,
     }),
@@ -56,7 +67,7 @@ const datalist: PlaceDataDocument[] = [
     id: createNewPlaceId(),
     latitude: 35.689957,
     longitude: 139.700507,
-    geohash: encode({
+    geohash: createGeoHash({
       latitude: 35.689957,
       longitude: 139.700507,
     }),
@@ -105,7 +116,7 @@ function generateTestData(count: number): PlaceDataDocument[] {
       id: createNewPlaceId(),
       latitude,
       longitude,
-      geohash: encode({
+      geohash: createGeoHash({
         latitude,
         longitude,
       }),
@@ -149,16 +160,13 @@ async function getPlaceResponse(
 }
 
 async function getPlaceListResponse(
-  bounds?: Bounds
+  grids: GridGeoHash[]
 ): Promise<PlaceDataListResponse> {
   const response: unknown = await (async () => {
     try {
-      if (!bounds) {
-        return Promise.resolve(placeDataList);
-      }
       return Promise.resolve(
-        placeDataList.filter(({ latitude, longitude }) =>
-          contains(bounds, createCoordinate(latitude, longitude))
+        placeDataList.filter(({ geohash }) =>
+          grids.some((grid) => isInGridGeoHash(geohash, grid))
         )
       );
     } catch (err: unknown) {
@@ -262,29 +270,57 @@ async function sendLikeListUpdateRequest(
   }
 }
 
-async function getPlaces(bounds?: Bounds): Promise<PlaceData[]> {
-  const placesResponse = await getPlaceListResponse(bounds);
-  if (placesResponse.length === 0) {
-    return [];
-  }
-
-  const placeIds = placesResponse.map((place) => place.id);
-  const likes = await getLikeListResponseMap(placeIds);
-
-  try {
-    return placesResponse.map((place) =>
-      createPlaceDataFromResponse(place, likes.get(place.id) ?? [])
-    );
-  } catch (err: unknown) {
-    if (err instanceof ZodError) {
-      throw new ResponseSchemaError(err);
-    } else {
-      throw err;
+async function getPlaces(bounds: Bounds): Promise<PlaceData[]> {
+  const grids = boundsToGridGeoHashes(bounds);
+  const [cachedGrids, uncachedGrids] = (() => {
+    const sorted: GridGeoHash[][] = [[], []];
+    for (const grid of grids) {
+      sorted[gridIsRegisteredInCache(grid) ? 0 : 1].push(grid);
     }
-  }
+    return sorted;
+  })();
+
+  // Get new places from server and register them to cache.
+  const newPlaces = await (async () => {
+    const placesResponse = await getPlaceListResponse(uncachedGrids);
+    if (placesResponse.length === 0) {
+      return [];
+    }
+
+    const placeIds = placesResponse.map((place) => place.id);
+    const likes = await getLikeListResponseMap(placeIds);
+
+    try {
+      return placesResponse.map((place) =>
+        createPlaceDataFromResponse(place, likes.get(place.id) ?? [])
+      );
+    } catch (err: unknown) {
+      if (err instanceof ZodError) {
+        throw new ResponseSchemaError(err);
+      } else {
+        throw err;
+      }
+    }
+  })();
+
+  registerPlacesToCache(uncachedGrids, newPlaces);
+
+  // Get cached places.
+  const cachedPlaces = cachedGrids.flatMap((grid) =>
+    getPlacesInGridFromCache(grid)
+  );
+
+  return [...cachedPlaces, ...newPlaces];
 }
 
 async function getPlace(placeId: PlaceId): Promise<PlaceData | undefined> {
+  // Try to get place data from cache.
+  const cachedPlace = getPlaceFromCache(placeId);
+  if (cachedPlace) {
+    return cachedPlace;
+  }
+
+  // If cache miss, get place data from server and register it to cache.
   const placeResponse = await getPlaceResponse(placeId);
   if (!placeResponse) {
     return undefined;
@@ -293,7 +329,17 @@ async function getPlace(placeId: PlaceId): Promise<PlaceData | undefined> {
   const likes = await getLikeListResponseMap([placeResponse.id]);
 
   try {
-    return createPlaceDataFromResponse(placeResponse, likes.get(placeId) ?? []);
+    const newPlace = createPlaceDataFromResponse(
+      placeResponse,
+      likes.get(placeId) ?? []
+    );
+
+    registerPlacesToCache(
+      [createGridGeoHash(placeResponse.geohash)],
+      [newPlace]
+    );
+
+    return newPlace;
   } catch (err: unknown) {
     if (err instanceof ZodError) {
       throw new ResponseSchemaError(err);
@@ -320,6 +366,8 @@ async function updatePlace(place: PlaceData): Promise<void> {
 
   sendPlaceUpdateRequest(placeRequest);
   sendLikeListUpdateRequest(likeListRequest);
+
+  registerPlacesToCache([createGridGeoHash(placeRequest.geohash)], [place]);
 }
 
 export const inMemoryPlaceRepository: PlaceRepository = {

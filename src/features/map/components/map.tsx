@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import "leaflet/dist/leaflet.css";
 import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import { useMarker } from "@/features/marker/hooks/marker";
-import type { PlaceRepository } from "@/repositories/place-repository";
+import type { PlaceRepository } from "@/repositories/place";
 import { useMap } from "../hooks/map";
 
 type MapComponentProps = {

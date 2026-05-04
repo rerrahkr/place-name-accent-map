@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { describe, expect, it } from "vitest";
-import { encode } from "@/lib/geohash";
 import { createCoordinate } from "@/models/coordinate";
 import {
   createNewPlaceId,
@@ -15,6 +14,7 @@ import {
 } from "@/models/place-name";
 import { createReadingKey } from "@/models/reading-key";
 import { createUserId } from "@/models/user";
+import { createGeoHash } from "../geohash";
 import type { LikeListResponse } from "./like";
 import type { PlaceDataRequest, PlaceDataResponse } from "./place";
 import {
@@ -31,7 +31,7 @@ describe("createPlaceDataFromResponse", () => {
       id: placeId,
       latitude: coordinate.latitude,
       longitude: coordinate.longitude,
-      geohash: encode(coordinate),
+      geohash: createGeoHash(coordinate),
       spelling: "ほげ",
       moras: ["ほ", "げ"],
       pitches: [1, 0],
@@ -95,7 +95,7 @@ describe("placeDataToRequest", () => {
       id: place.id,
       latitude: place.coordinate.latitude,
       longitude: place.coordinate.longitude,
-      geohash: encode(place.coordinate),
+      geohash: createGeoHash(place.coordinate),
       spelling: place.nameData.spelling,
       moras: place.nameData.moras,
       pitches: [1, 0],

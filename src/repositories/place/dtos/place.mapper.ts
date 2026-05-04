@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
-import { encode } from "@/lib/geohash";
 import { createCoordinate } from "@/models/coordinate";
 import type { MoraPitch } from "@/models/mora";
 import { createPlaceData, createPlaceId, type PlaceData } from "@/models/place";
 import { createPlaceNameData } from "@/models/place-name";
 import { createReadingKey } from "@/models/reading-key";
 import { createUserId } from "@/models/user";
+import { createGeoHash } from "../geohash";
 import type { LikeListResponse } from "./like";
 import {
   type PlaceDataRequest,
@@ -44,7 +44,7 @@ export function placeDataToRequest(place: PlaceData): PlaceDataRequest {
     id: place.id,
     latitude: place.coordinate.latitude,
     longitude: place.coordinate.longitude,
-    geohash: encode(place.coordinate),
+    geohash: createGeoHash(place.coordinate),
     spelling: place.nameData.spelling,
     moras: place.nameData.moras,
     pitches: place.nameData.pitches.map((p) => (p === "H" ? 1 : 0)),

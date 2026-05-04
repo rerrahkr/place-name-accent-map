@@ -25,3 +25,12 @@ export function decode(hash: string): Coordinate {
   const { latitude, longitude } = geohash.decode(hash);
   return createCoordinate(latitude, longitude);
 }
+export function decodeBounds(hash: string): Bounds {
+  const [minlat, minlon, maxlat, maxlon] = geohash.decode_bbox(hash);
+  return {
+    north: maxlat,
+    south: minlat,
+    east: maxlon,
+    west: minlon,
+  };
+}

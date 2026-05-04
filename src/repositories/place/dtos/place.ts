@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { z } from "zod";
+import { geohashSchema } from "../geohash";
 
 export const placeIdSchema = z.uuidv7();
 export const userIdSchema = z.string().trim().min(1);
 
-const geohashSchema = z.string().regex(/^[0-9b-hjkmnp-z]+$/);
 const latitudeScehema = z.number().min(-90).max(90);
 const longitudeSchema = z.number().min(-180).max(180);
 const moraSchema = z

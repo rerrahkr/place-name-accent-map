@@ -3,7 +3,7 @@
 
 import { Toaster } from "sonner";
 import { MapComponent } from "./features/map";
-import { inMemoryPlaceRepository } from "./repositories/in-memory-place-repository";
+import { inMemoryPlaceRepository } from "./repositories/place";
 
 function App() {
   return (

@@ -15,7 +15,7 @@ import {
 } from "@/models/place";
 import type { PlaceNameData } from "@/models/place-name";
 import { userIdSchema } from "@/models/user";
-import type { PlaceRepository } from "@/repositories/place-repository";
+import type { PlaceRepository } from "@/repositories/place";
 import { useMapStore } from "@/stores/edit";
 
 const MARKER_HIDE_ZOOM_THRESHOLD = 13;
