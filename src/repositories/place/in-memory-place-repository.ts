@@ -364,8 +364,8 @@ async function updatePlace(place: PlaceData): Promise<void> {
     }
   })();
 
-  sendPlaceUpdateRequest(placeRequest);
-  sendLikeListUpdateRequest(likeListRequest);
+  await sendPlaceUpdateRequest(placeRequest);
+  await sendLikeListUpdateRequest(likeListRequest);
 
   registerPlacesToCache([createGridGeoHash(placeRequest.geohash)], [place]);
 }
