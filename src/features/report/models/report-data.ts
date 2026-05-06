@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2026 Rerrah
 
+import type { PlaceId } from "@/models/place";
+import type { UserId } from "@/models/user";
+
 export const DELETE_REASONS = [
   "inappropriate",
   "spam",
@@ -22,4 +25,10 @@ export function explainDeleteReason(reason: DeleteReason): string {
 
 export type ReportData = {
   reason: DeleteReason;
+};
+
+export type Report = {
+  userId: UserId;
+  placeId: PlaceId;
+  data: ReportData;
 };

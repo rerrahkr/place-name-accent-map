@@ -6,6 +6,7 @@ import { useAnonymousSignIn, useAuth } from "./features/auth";
 import { MapComponent } from "./features/map";
 import { firebaseAuthGateway } from "./gateways/auth";
 import { inMemoryPlaceRepository } from "./repositories/place";
+import { inMemoryReportRepository } from "./repositories/report";
 
 function App() {
   useAuth(firebaseAuthGateway);
@@ -16,7 +17,8 @@ function App() {
       <Toaster position="top-center" />
       <MapComponent
         className="h-dvh w-dvw"
-        repository={inMemoryPlaceRepository}
+        placeRepository={inMemoryPlaceRepository}
+        reportRepository={inMemoryReportRepository}
       />
     </>
   );

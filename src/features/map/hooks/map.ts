@@ -15,13 +15,15 @@ import {
 } from "@/models/place";
 import type { PlaceNameData } from "@/models/place-name";
 import type { PlaceRepository } from "@/repositories/place";
+import type { ReportRepository } from "@/repositories/report";
 import { useAuthStore } from "@/stores/auth";
 import { useMapStore } from "@/stores/edit";
 
 const MARKER_HIDE_ZOOM_THRESHOLD = 13;
 
 export function useMap(
-  repository: PlaceRepository,
+  placeRepository: PlaceRepository,
+  reportRepository: ReportRepository,
   mountMarkerPopup: MountMarkerPopup
 ) {
   const mapRef = useRef<Leaflet.Map | null>(null);
@@ -39,13 +41,13 @@ export function useMap(
       }
 
       try {
-        const place = await repository.getPlace(id);
+        const place = await placeRepository.getPlace(id);
         if (place === undefined) {
           throw new Error();
         }
 
         const newData = togglePlaceDataLike(place, currentUserId);
-        await repository.updatePlace(newData);
+        await placeRepository.updatePlace(newData);
 
         return true;
       } catch (e: unknown) {
@@ -59,19 +61,29 @@ export function useMap(
     }
   );
 
-  const handleReport = useEffectEvent((id: PlaceId, { reason }: ReportData) => {
-    if (!currentUserId) {
-      toast.error("ユーザー認証がされていないため操作できません。");
-      return;
+  const handleReport = useEffectEvent(
+    async (id: PlaceId, reportData: ReportData) => {
+      if (!currentUserId) {
+        toast.error("ユーザー認証がされていないため操作できません。");
+        return;
+      }
+
+      try {
+        await reportRepository.addReport({
+          placeId: id,
+          userId: currentUserId,
+          data: reportData,
+        });
+
+        toast.success(`削除依頼を受け付けました`, {
+          description: explainDeleteReason(reportData.reason),
+        });
+      } catch (err: unknown) {
+        console.error(`Failed to report "${id}": ${JSON.stringify(err)}`);
+        toast.error("操作に失敗しました");
+      }
     }
-
-    // TODO: report
-    console.log(`Accept deletion request "${id}": ${reason}`);
-
-    toast.success(`削除依頼を受け付けました`, {
-      description: explainDeleteReason(reason),
-    });
-  });
+  );
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -110,7 +122,7 @@ export function useMap(
       );
 
       try {
-        await repository.addPlace(newPlace);
+        await placeRepository.addPlace(newPlace);
         return true;
       } catch (e: unknown) {
         console.error(
@@ -191,7 +203,7 @@ export function useMap(
 
         // Add existing markers which exist within displayed bounds.
         const leafletBounds = map.getBounds();
-        const placesInBounds = await repository.getPlaces({
+        const placesInBounds = await placeRepository.getPlaces({
           north: leafletBounds.getNorth(),
           south: leafletBounds.getSouth(),
           east: leafletBounds.getEast(),
@@ -255,7 +267,7 @@ export function useMap(
         mapRef.current = null;
       }
     };
-  }, [repository, mountMarkerPopup, currentUserId]);
+  }, [placeRepository, mountMarkerPopup, currentUserId]);
 
   return { mapElementRef };
 }

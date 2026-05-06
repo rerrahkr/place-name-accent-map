@@ -7,21 +7,28 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import { useMarker } from "@/features/marker/hooks/marker";
 import type { PlaceRepository } from "@/repositories/place";
+import type { ReportRepository } from "@/repositories/report";
 import { useMap } from "../hooks/map";
 
 type MapComponentProps = {
-  repository: PlaceRepository;
+  placeRepository: PlaceRepository;
+  reportRepository: ReportRepository;
   className?: string;
   style?: React.CSSProperties;
 };
 
 export function MapComponent({
-  repository,
+  placeRepository,
+  reportRepository,
   className,
   style,
 }: MapComponentProps): React.JSX.Element {
   const { popupPortals, mountMarkerPopup } = useMarker();
-  const { mapElementRef } = useMap(repository, mountMarkerPopup);
+  const { mapElementRef } = useMap(
+    placeRepository,
+    reportRepository,
+    mountMarkerPopup
+  );
 
   return (
     <>

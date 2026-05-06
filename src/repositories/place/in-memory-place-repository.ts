@@ -5,6 +5,12 @@ import { ZodError } from "zod";
 import type { Bounds } from "@/models/bounds";
 import { createNewPlaceId, type PlaceData, type PlaceId } from "@/models/place";
 import {
+  RequestSchemaError,
+  ResponseSchemaError,
+  ServerRuleError,
+  ServerSystemError,
+} from "../errors";
+import {
   type LikeListRequest,
   type LikeListResponse,
   type LikeResponse,
@@ -22,12 +28,6 @@ import {
   createPlaceDataFromResponse,
   placeDataToRequest,
 } from "./dtos/place.mapper";
-import {
-  RequestSchemaError,
-  ResponseSchemaError,
-  ServerRuleError,
-  ServerSystemError,
-} from "./errors";
 import {
   boundsToGridGeoHashes,
   createGeoHash,
