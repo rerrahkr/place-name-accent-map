@@ -17,6 +17,7 @@
     "@tailwindcss/vite": "4.1.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "firebase": "12.12.1",
     "immer": "11.1.0",
     "leaflet": "1.9.4",
     "leaflet-contextmenu": "1.4.0",

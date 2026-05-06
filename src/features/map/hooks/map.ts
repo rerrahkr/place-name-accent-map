@@ -14,14 +14,11 @@ import {
   togglePlaceDataLike,
 } from "@/models/place";
 import type { PlaceNameData } from "@/models/place-name";
-import { userIdSchema } from "@/models/user";
 import type { PlaceRepository } from "@/repositories/place";
+import { useAuthStore } from "@/stores/auth";
 import { useMapStore } from "@/stores/edit";
 
 const MARKER_HIDE_ZOOM_THRESHOLD = 13;
-
-// TODO: My user ID.
-const currentUserId = userIdSchema.parse("hogefugapiyo");
 
 export function useMap(
   repository: PlaceRepository,
@@ -32,8 +29,15 @@ export function useMap(
   const markerLayerShownRef = useRef<boolean>(false);
   const displayedMarkerIds = useRef<Set<PlaceId>>(new Set<PlaceId>());
 
+  const currentUserId = useAuthStore((state) => state.currentUserId);
+
   const handleLike = useEffectEvent(
     async (id: PlaceId, isLiked: boolean): Promise<boolean> => {
+      if (!currentUserId) {
+        toast.error("ユーザー認証がされていないため操作できません。");
+        return false;
+      }
+
       try {
         const place = await repository.getPlace(id);
         if (place === undefined) {
@@ -56,6 +60,11 @@ export function useMap(
   );
 
   const handleReport = useEffectEvent((id: PlaceId, { reason }: ReportData) => {
+    if (!currentUserId) {
+      toast.error("ユーザー認証がされていないため操作できません。");
+      return;
+    }
+
     // TODO: report
     console.log(`Accept deletion request "${id}": ${reason}`);
 
@@ -88,6 +97,11 @@ export function useMap(
       latLng: Leaflet.LatLng,
       nameData: PlaceNameData
     ): Promise<boolean> => {
+      if (!currentUserId) {
+        toast.error("ユーザー認証がされていないため操作できません。");
+        return false;
+      }
+
       const newPlace = createNewPlaceData(
         id,
         createCoordinate(latLng.lat, latLng.lng),
@@ -109,6 +123,10 @@ export function useMap(
   );
 
   useEffect(() => {
+    if (!currentUserId) {
+      return;
+    }
+
     const container = mapElementRef.current;
     if (!container || mapRef.current) {
       return;
@@ -167,6 +185,10 @@ export function useMap(
       }
 
       async function updateDisplayedMarkers() {
+        if (!currentUserId) {
+          return;
+        }
+
         // Add existing markers which exist within displayed bounds.
         const leafletBounds = map.getBounds();
         const placesInBounds = await repository.getPlaces({
@@ -233,7 +255,7 @@ export function useMap(
         mapRef.current = null;
       }
     };
-  }, [repository, mountMarkerPopup]);
+  }, [repository, mountMarkerPopup, currentUserId]);
 
   return { mapElementRef };
 }
