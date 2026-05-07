@@ -2,23 +2,23 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { Toaster } from "sonner";
+import { authGateway } from "@/gateways/auth";
 import { useAnonymousSignIn, useAuth } from "./features/auth";
 import { MapComponent } from "./features/map";
-import { firebaseAuthGateway } from "./gateways/auth";
-import { inMemoryPlaceRepository } from "./repositories/place";
-import { inMemoryReportRepository } from "./repositories/report";
+import { placeRepository } from "./repositories/place";
+import { reportRepository } from "./repositories/report";
 
 function App() {
-  useAuth(firebaseAuthGateway);
-  useAnonymousSignIn(firebaseAuthGateway);
+  useAuth(authGateway);
+  useAnonymousSignIn(authGateway);
 
   return (
     <>
       <Toaster position="top-center" />
       <MapComponent
         className="h-dvh w-dvw"
-        placeRepository={inMemoryPlaceRepository}
-        reportRepository={inMemoryReportRepository}
+        placeRepository={placeRepository}
+        reportRepository={reportRepository}
       />
     </>
   );

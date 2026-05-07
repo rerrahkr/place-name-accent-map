@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import { z } from "zod";
-import { geohashSchema } from "../geohash";
+import { geohashSchema } from "../../geohash";
 
 export const placeIdSchema = z.uuidv7();
 export const userIdSchema = z.string().trim().min(1);

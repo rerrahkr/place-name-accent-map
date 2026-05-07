@@ -7,7 +7,7 @@ import { createUserId } from "@/models/user";
 import type { AuthGateway } from "./auth-gateway";
 import { AuthServerError } from "./errors";
 
-export const firebaseAuthGateway: AuthGateway = {
+export const authGateway: AuthGateway = {
   getCurrentUserId: () => {
     const user = auth.currentUser;
     return user ? createUserId(user.uid) : undefined;

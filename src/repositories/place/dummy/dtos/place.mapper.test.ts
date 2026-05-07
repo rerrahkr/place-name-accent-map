@@ -14,7 +14,7 @@ import {
 } from "@/models/place-name";
 import { createReadingKey } from "@/models/reading-key";
 import { createUserId } from "@/models/user";
-import { createGeoHash } from "../geohash";
+import { createGeoHash } from "../../geohash";
 import type { LikeListResponse } from "./like";
 import type { PlaceDataRequest, PlaceDataResponse } from "./place";
 import {

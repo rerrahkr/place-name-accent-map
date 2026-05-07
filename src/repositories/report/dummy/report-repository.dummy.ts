@@ -7,10 +7,10 @@ import {
   RequestSchemaError,
   ServerRuleError,
   ServerSystemError,
-} from "../errors";
+} from "@/repositories/errors";
+import type { ReportRepository } from "../report-repository";
 import type { ReportRequest } from "./dtos/report";
 import { reportToRequest } from "./dtos/report.mapper";
-import type { ReportRepository } from "./report-repository";
 
 type ReportDocument = ReportRequest;
 
@@ -45,6 +45,6 @@ async function addReport(report: Report): Promise<void> {
   await sendReportRequest(request);
 }
 
-export const inMemoryReportRepository: ReportRepository = {
+export const reportRepository: ReportRepository = {
   addReport,
 };

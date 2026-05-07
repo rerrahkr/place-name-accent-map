@@ -9,7 +9,21 @@ import {
   ResponseSchemaError,
   ServerRuleError,
   ServerSystemError,
-} from "../errors";
+} from "../../errors";
+import {
+  boundsToGridGeoHashes,
+  createGeoHash,
+  createGridGeoHash,
+  type GridGeoHash,
+  isInGridGeoHash,
+} from "../geohash";
+import {
+  getPlaceFromCache,
+  getPlacesInGridFromCache,
+  gridIsRegisteredInCache,
+  registerPlacesToCache,
+} from "../place-cache";
+import type { PlaceRepository } from "../place-repository";
 import {
   type LikeListRequest,
   type LikeListResponse,
@@ -28,20 +42,6 @@ import {
   createPlaceDataFromResponse,
   placeDataToRequest,
 } from "./dtos/place.mapper";
-import {
-  boundsToGridGeoHashes,
-  createGeoHash,
-  createGridGeoHash,
-  type GridGeoHash,
-  isInGridGeoHash,
-} from "./geohash";
-import {
-  getPlaceFromCache,
-  getPlacesInGridFromCache,
-  gridIsRegisteredInCache,
-  registerPlacesToCache,
-} from "./place-cache";
-import type { PlaceRepository } from "./place-repository";
 
 type PlaceDataDocument = PlaceDataResponse;
 
@@ -370,7 +370,7 @@ async function updatePlace(place: PlaceData): Promise<void> {
   registerPlacesToCache([createGridGeoHash(placeRequest.geohash)], [place]);
 }
 
-export const inMemoryPlaceRepository: PlaceRepository = {
+export const placeRepository: PlaceRepository = {
   getPlaces,
   getPlace,
   addPlace: updatePlace,
