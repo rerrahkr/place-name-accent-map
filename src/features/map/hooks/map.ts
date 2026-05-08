@@ -234,7 +234,9 @@ export function useMap(
       await updateDisplayedMarkers();
 
       map.on("moveend", async () => {
-        await updateDisplayedMarkers();
+        if (markerLayerShownRef.current) {
+          await updateDisplayedMarkers();
+        }
       });
 
       map.on("zoomend", async () => {
