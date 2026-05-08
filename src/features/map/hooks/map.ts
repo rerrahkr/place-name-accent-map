@@ -191,8 +191,15 @@ export function useMap(
         const marker = L.marker(ev.latlng).addTo(markerLayer);
         mountMarkerPopup(marker, handleLike, handleReport, {
           mode: "edit",
-          onSave: async (id, nameData) =>
-            await handleSave(id, ev.latlng, nameData),
+          onSave: async (id, nameData) => {
+            const result = await handleSave(id, ev.latlng, nameData);
+
+            if (result) {
+              displayedMarkerIds.current.add(id);
+            }
+
+            return result;
+          },
         });
       }
 
