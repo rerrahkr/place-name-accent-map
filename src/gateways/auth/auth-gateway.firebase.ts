@@ -27,4 +27,4 @@ export const authGateway: AuthGateway = {
       throw new AuthServerError(error);
     }
   },
-};
+} as const;

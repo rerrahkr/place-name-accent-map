@@ -47,4 +47,4 @@ async function addReport(report: Report): Promise<void> {
 
 export const reportRepository: ReportRepository = {
   addReport,
-};
+} as const;

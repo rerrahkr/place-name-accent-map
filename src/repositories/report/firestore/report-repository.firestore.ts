@@ -12,7 +12,6 @@ import { reportToRequest } from "./dtos/report.mapper";
 
 async function sendReportRequest(request: ReportRequest): Promise<void> {
   try {
-    console.log(request);
     await addDoc(collection(db, "reports"), request);
   } catch (error: unknown) {
     if (error instanceof FirestoreError) {
@@ -41,4 +40,4 @@ async function addReport(report: Report): Promise<void> {
 
 export const reportRepository: ReportRepository = {
   addReport,
-};
+} as const;
