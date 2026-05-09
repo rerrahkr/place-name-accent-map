@@ -122,7 +122,34 @@ export function useMarker() {
         closeOnClick: !isEditable,
       });
 
+      // Setup ResizeObserver to update popup position when content size changes.
+      const resizeObserver = new ResizeObserver(() => {
+        const popup = marker.getPopup();
+        if (!popup?.isOpen()) {
+          return;
+        }
+
+        // Save focus and selection state
+        const focusedElement =
+          document.activeElement as HTMLInputElement | null;
+        const selectionStart = focusedElement?.selectionStart;
+        const selectionEnd = focusedElement?.selectionEnd;
+
+        popup.update();
+
+        // Restore focus and selection state.
+        if (focusedElement && popupElement.contains(focusedElement)) {
+          focusedElement.focus();
+          if (selectionStart && selectionEnd) {
+            focusedElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }
+      });
+      resizeObserver.observe(popupElement);
+
       marker.on("popupclose", () => {
+        resizeObserver.disconnect();
+
         if (useMapStore.getState().editingPopupId === popupId) {
           removeMarker();
         }

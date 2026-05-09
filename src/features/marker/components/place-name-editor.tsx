@@ -160,8 +160,8 @@ export function PlaceNameEditor({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-3 w-auto min-w-[280px]">
+      <div className="flex flex-col">
         <h2 className="text-lg font-semibold text-foreground">
           地名の発音を登録
         </h2>
@@ -170,7 +170,7 @@ export function PlaceNameEditor({
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 w-auto">
         {/* Spelling */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="spelling">地名の綴り</Label>

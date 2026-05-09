@@ -28,7 +28,7 @@ export function AccentRenderer({
   }
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-nowrap gap-1 overflow-x-auto">
       {moras.map((mora, index) => {
         const pitch = pitches[index] ?? DEFAULT_MORA_PITCH;
         const isHigh = pitch === "H";
@@ -42,13 +42,13 @@ export function AccentRenderer({
             onClick={isEditable ? () => togglePitch(index) : undefined}
             className={cn(
               "relative flex flex-col items-center justify-center min-w-10",
-              "h-16 px-2 rounded-md border-2 select-none",
+              "h-16 px-2 rounded-md border-2 select-none scale-95",
               isHigh
                 ? "bg-pitch-high-bg border-pitch-high text-pitch-high"
                 : "bg-pitch-low-bg border-pitch-low text-pitch-low",
               isEditable && [
                 "cursor-pointer transition-all duration-200",
-                "hover:scale-105 active:scale-95",
+                "hover:scale-100 active:scale-90",
               ]
             )}
           >

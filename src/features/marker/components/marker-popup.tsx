@@ -55,7 +55,7 @@ export function MarkerPopup({
   }
 
   return (
-    <div className="w-full max-w-xs py-0 space-y-2">
+    <div className="w-auto py-0 space-y-2">
       {hasSaved ? (
         <PlaceNameDisplay
           spelling={spelling}

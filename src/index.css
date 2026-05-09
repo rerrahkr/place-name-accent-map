@@ -140,12 +140,17 @@
 }
 
 @layer components {
+  .marker-popup {
+    max-width: 90vw !important;
+  }
+
   .marker-popup .leaflet-popup-content-wrapper {
     /* Remove padding in wrapper */
     @apply p-0;
   }
 
   .marker-popup .leaflet-popup-content {
-    @apply w-50 p-0;
+    @apply w-full p-0;
+    width: auto !important;
   }
 }
