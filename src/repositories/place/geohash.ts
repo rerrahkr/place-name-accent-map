@@ -8,17 +8,23 @@ import type { Coordinate } from "@/models/coordinate";
 
 export const geohashCommonSchema = z.string().regex(/^[0-9b-hjkmnp-z]+$/);
 
-export const geohashSchema = geohashCommonSchema.brand<"GeoHash">();
+const GEOHASH_PRECISION = 9;
+
+export const geohashSchema = geohashCommonSchema
+  .length(GEOHASH_PRECISION)
+  .brand<"GeoHash">();
 export type GeoHash = z.infer<typeof geohashSchema>;
 
 export function createGeoHash(coordinate: Coordinate): GeoHash {
   return geohashSchema.parse(encode(coordinate));
 }
 
-export const gridGeohashSchema = geohashCommonSchema.brand<"GridGeoHash">();
-export type GridGeoHash = z.infer<typeof gridGeohashSchema>;
-
 const GRID_PRECISION = 5;
+
+export const gridGeohashSchema = geohashCommonSchema
+  .length(GRID_PRECISION)
+  .brand<"GridGeoHash">();
+export type GridGeoHash = z.infer<typeof gridGeohashSchema>;
 
 export function createGridGeoHash(geohash: GeoHash): GridGeoHash {
   return gridGeohashSchema.parse(geohash.slice(0, GRID_PRECISION));

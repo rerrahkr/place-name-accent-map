@@ -21,7 +21,7 @@ export const placeDataRequestSchema = z
     id: placeIdSchema,
     latitude: latitudeScehema,
     longitude: longitudeSchema,
-    geohash: geohashSchema.length(9),
+    geohash: geohashSchema,
     spelling: z.string().trim().min(1),
     moras: z.array(moraSchema).min(1),
     pitches: z.array(pitchSchema).min(1),
