@@ -153,4 +153,14 @@
     @apply w-full p-0;
     width: auto !important;
   }
+
+  .marker-tooltip {
+      @apply !bg-transparent !border-none !shadow-none !p-0 !opacity-100
+      !text-white
+      [text-shadow:_0_1px_0_#000,_0.7px_0.7px_0_#000,_1px_0_0_#000,_-0.7px_0.7px_0_#000,_-1px_0_0_#000,_-0.7px_-0.7px_0_#000,_0_-1px_0_#000,_0.7px_-0.7px_0_#000];
+  }
+
+  .marker-tooltip::before {
+    display: none;
+  }
 }

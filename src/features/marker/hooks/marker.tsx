@@ -35,6 +35,13 @@ type MountOptionEditMode = {
 
 type MountOptions = MountOptionsDisplayMode | MountOptionEditMode;
 
+const TOOLTIP_OPTIONS: Leaflet.TooltipOptions = {
+  permanent: true,
+  direction: "top",
+  className: "marker-tooltip",
+  offset: [-15, -5],
+} as const;
+
 export function useMarker() {
   const { popupPortals, portalManager } = usePopupPortal();
 
@@ -96,6 +103,8 @@ export function useMarker() {
           popup.options.closeOnClick = true;
         }
 
+        marker.bindTooltip(data.spelling, TOOLTIP_OPTIONS).openTooltip();
+
         return true;
       }
 
@@ -155,10 +164,14 @@ export function useMarker() {
         }
       });
 
-      if (onSave !== undefined) {
+      if (isEditable) {
         useMapStore.getState().startEditing(popupId);
 
         marker.openPopup();
+      } else {
+        marker
+          .bindTooltip(nameData?.spelling ?? "", TOOLTIP_OPTIONS)
+          .openTooltip();
       }
     },
     [portalManager]
