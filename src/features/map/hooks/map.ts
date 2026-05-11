@@ -18,6 +18,7 @@ import type { PlaceRepository } from "@/repositories/place";
 import type { ReportRepository } from "@/repositories/report";
 import { useAuthStore } from "@/stores/auth";
 import { useMapStore } from "@/stores/edit";
+import { useWelcomeStore } from "@/stores/welcome";
 
 const MARKER_HIDE_ZOOM_THRESHOLD = 13;
 
@@ -32,6 +33,7 @@ export function useMap(
   const displayedMarkerIds = useRef<Set<PlaceId>>(new Set<PlaceId>());
 
   const currentUserId = useAuthStore((state) => state.currentUserId);
+  const { changeOpenWelcomeDialogState } = useWelcomeStore();
 
   const handleLike = useEffectEvent(
     async (id: PlaceId, isLiked: boolean): Promise<boolean> => {
@@ -157,7 +159,7 @@ export function useMap(
         contextmenuWidth: 180,
         contextmenuItems: [
           {
-            text: "この地点の地名と発音を登録",
+            text: "この地点の地名と読みを登録",
             callback: addMarker,
             disabled: false,
           },
@@ -176,6 +178,37 @@ export function useMap(
         attribution:
           '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
+
+      // Add help button control.
+      const HelpControl = L.Control.extend({
+        options: {
+          position: "topleft",
+        },
+
+        onAdd: () => {
+          const container = L.DomUtil.create("div", "leaflet-bar");
+          const button = L.DomUtil.create("a", "leaflet-bar-button", container);
+          button.innerHTML = "?";
+          button.href = "#";
+          button.title = "このマップについて";
+          button.style.width = "30px";
+          button.style.height = "30px";
+          button.style.lineHeight = "30px";
+          button.style.textAlign = "center";
+          button.style.fontSize = "18px";
+          button.style.fontWeight = "bold";
+          button.style.cursor = "pointer";
+
+          L.DomEvent.on(button, "click", (e: Event) => {
+            L.DomEvent.preventDefault(e);
+            changeOpenWelcomeDialogState(true);
+          });
+
+          return container;
+        },
+      });
+
+      map.addControl(new HelpControl());
 
       // Initialize marker layer
       const markerLayer = L.featureGroup();
@@ -276,7 +309,12 @@ export function useMap(
         mapRef.current = null;
       }
     };
-  }, [placeRepository, mountMarkerPopup, currentUserId]);
+  }, [
+    placeRepository,
+    mountMarkerPopup,
+    currentUserId,
+    changeOpenWelcomeDialogState,
+  ]);
 
   return { mapElementRef };
 }

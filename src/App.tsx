@@ -7,10 +7,19 @@ import { useAnonymousSignIn, useAuth } from "./features/auth";
 import { MapComponent } from "./features/map";
 import { placeRepository } from "./repositories/place";
 import { reportRepository } from "./repositories/report";
+import { useWelcomeStore } from "./stores/welcome";
 
 function App() {
   useAuth(authGateway);
-  useAnonymousSignIn(authGateway);
+
+  const { isFirstAccess, changeOpenWelcomeDialogState, setFirstAccess } =
+    useWelcomeStore();
+  useAnonymousSignIn(authGateway, () => {
+    if (isFirstAccess) {
+      changeOpenWelcomeDialogState(true);
+      setFirstAccess(false);
+    }
+  });
 
   return (
     <>

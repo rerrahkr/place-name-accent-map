@@ -27,7 +27,7 @@ export function AccentEditor({
   return (
     <div className="flex flex-col gap-2">
       <div className="text-xs text-muted-foreground mb-1">
-        各モーラをクリックして高低を切り替えてください
+        四角をクリックすると高低を切り替えられます
       </div>
       <AccentRenderer
         moras={moras}

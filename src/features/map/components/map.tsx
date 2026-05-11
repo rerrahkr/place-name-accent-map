@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import "leaflet/dist/leaflet.css";
 import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import { useMarker } from "@/features/marker/hooks/marker";
+import { WelcomeDialog } from "@/features/welcome";
 import type { PlaceRepository } from "@/repositories/place";
 import type { ReportRepository } from "@/repositories/report";
 import { useMap } from "../hooks/map";
@@ -32,6 +33,7 @@ export function MapComponent({
 
   return (
     <>
+      <WelcomeDialog />
       <div ref={mapElementRef} className={className} style={style} />
       {popupPortals.map(({ id, container, content }) =>
         createPortal(content, container, id)

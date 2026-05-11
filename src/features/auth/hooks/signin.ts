@@ -4,8 +4,12 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { type AuthGateway, AuthServerError } from "@/gateways/auth";
+import type { UserId } from "@/models/user";
 
-export function useAnonymousSignIn(authGateway: AuthGateway) {
+export function useAnonymousSignIn(
+  authGateway: AuthGateway,
+  afterSignIn?: (userId: UserId) => void
+) {
   const isAuthenticatingRef = useRef(false);
 
   useEffect(() => {
@@ -28,6 +32,8 @@ export function useAnonymousSignIn(authGateway: AuthGateway) {
         if (!newUserId) {
           throw new Error("Could not get user ID after signing in anonymously");
         }
+
+        afterSignIn?.(newUserId);
       } catch (error: unknown) {
         if (error instanceof AuthServerError) {
           console.error("Failed to sign in anonymously", error.innerError);
@@ -41,5 +47,5 @@ export function useAnonymousSignIn(authGateway: AuthGateway) {
         isAuthenticatingRef.current = false;
       }
     })();
-  }, [authGateway]);
+  }, [authGateway, afterSignIn]);
 }
