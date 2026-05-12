@@ -156,7 +156,7 @@
 
 @layer components {
   .marker-popup {
-    max-width: 90vw !important;
+    max-width: 90dvw !important;
   }
 
   .marker-popup .leaflet-popup-content-wrapper {

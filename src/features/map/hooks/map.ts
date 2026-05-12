@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rerrah
 
 import type * as Leaflet from "leaflet";
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { MountMarkerPopup } from "@/features/marker";
 import { explainDeleteReason, type ReportData } from "@/features/report";
@@ -31,6 +31,8 @@ export function useMap(
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const markerLayerShownRef = useRef<boolean>(false);
   const displayedMarkerIds = useRef<Set<PlaceId>>(new Set<PlaceId>());
+
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
   const currentUserId = useAuthStore((state) => state.currentUserId);
   const { changeOpenWelcomeDialogState } = useWelcomeStore();
@@ -164,7 +166,7 @@ export function useMap(
             disabled: false,
           },
         ],
-      }).setView([35.681236, 139.767125], 16);
+      }).setView([35.681236, 139.767125], 15);
 
       map.on("contextmenu.show", () => {
         map.contextmenu.setDisabled(
@@ -303,6 +305,8 @@ export function useMap(
       }
     })();
 
+    setHasInitialized(true);
+
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
@@ -316,5 +320,5 @@ export function useMap(
     changeOpenWelcomeDialogState,
   ]);
 
-  return { mapElementRef };
+  return { mapElementRef, hasInitialized };
 }

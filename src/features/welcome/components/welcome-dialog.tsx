@@ -23,7 +23,7 @@ export function WelcomeDialog(): React.JSX.Element {
       open={isWelcomeDialogOpen}
       onOpenChange={changeOpenWelcomeDialogState}
     >
-      <DialogContent className="z-[2000] max-h-[80vh] max-w-3xl overflow-y-auto">
+      <DialogContent className="z-[2000] max-h-[80dvh] max-w-3xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-3xl">
             🗾 全国地名地元の発音マップ

@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { authGateway } from "@/gateways/auth";
 import { useAnonymousSignIn, useAuth } from "./features/auth";
 import { MapComponent } from "./features/map";
+import { WelcomeDialog } from "./features/welcome";
 import { placeRepository } from "./repositories/place";
 import { reportRepository } from "./repositories/report";
 import { useWelcomeStore } from "./stores/welcome";
@@ -24,6 +25,7 @@ function App() {
   return (
     <>
       <Toaster position="top-center" />
+      <WelcomeDialog />
       <MapComponent
         className="h-dvh w-dvw"
         placeRepository={placeRepository}
