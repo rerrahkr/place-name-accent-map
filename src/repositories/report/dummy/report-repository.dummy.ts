@@ -14,7 +14,6 @@ import { reportToRequest } from "./dtos/report.mapper";
 
 type ReportDocument = ReportRequest;
 
-// TODO: Actual document has createdAt field.
 const reportDocuments: ReportDocument[] = [];
 
 async function sendReportRequest(request: ReportRequest): Promise<void> {

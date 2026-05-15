@@ -85,7 +85,6 @@ async function getPlaceListResponse(
       const querySnap = await getDocs(q);
       return querySnap.docs.map((d) => d.data());
     } catch (err: unknown) {
-      console.error(err);
       throw new ServerSystemError(err);
     }
   })();
