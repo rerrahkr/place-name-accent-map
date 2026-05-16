@@ -1,0 +1,24 @@
+name: Setup and Install
+description: Common job steps of pnpm setup and installation
+runs:
+  using: composite
+  steps:
+    - name: Exact versions from .prototools
+      id: versions
+      run: |
+        echo "pnpm=$(grep '^pnpm' ./.prototools | awk -F'\"' '{print $2}')" >> $GITHUB_OUTPUT
+        echo "node=$(grep '^node' ./.prototools | awk -F'\"' '{print $2}')" >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v6
+      with:
+        version: ${{ steps.versions.outputs.pnpm }}
+        run_install: false
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ steps.versions.outputs.node }}
+        cache: "pnpm"
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      shell: bash
