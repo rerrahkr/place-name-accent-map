@@ -3,8 +3,6 @@
 
 import type React from "react";
 import { createPortal } from "react-dom";
-import "leaflet/dist/leaflet.css";
-import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
 import { Spinner } from "@/components/ui/spinner";
 import { useMarker } from "@/features/marker/hooks/marker";
 import { cn } from "@/lib/utils";
