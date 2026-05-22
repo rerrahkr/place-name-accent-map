@@ -20,7 +20,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useMapStore } from "@/stores/edit";
 import { useWelcomeStore } from "@/stores/welcome";
 
-const MARKER_HIDE_ZOOM_THRESHOLD = 13;
+const MARKER_HIDE_ZOOM_THRESHOLD = 11;
 
 export function useMap(
   placeRepository: PlaceRepository,
