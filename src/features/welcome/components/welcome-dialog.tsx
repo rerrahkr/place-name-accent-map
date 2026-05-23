@@ -96,6 +96,15 @@ export function WelcomeDialog(): React.JSX.Element {
             <p className="text-sm text-appendix">
               要望・不具合報告は
               <a
+                href="https://x.com/RerrahKRynn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                X (@RerrahKRynn)
+              </a>
+              または
+              <a
                 href="https://github.com/rerrahkr/place-name-accent-map"
                 target="_blank"
                 rel="noopener noreferrer"
